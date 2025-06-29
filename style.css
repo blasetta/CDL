@@ -1,1 +1,48 @@
 /* Add styles here */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.perspective {
+ perspective: 1000px;
+}
+.card-inner {
+ position: relative;
+ width: 100%;
+ height: 100%;
+ transition: transform 0.7s;
+ transform-style: preserve-3d;
+}
+.card.is-flipped .card-inner {
+ transform: rotateY(180deg);
+}
+.card-face {
+ position: absolute;
+ width: 100%;
+ height: 100%;
+ -webkit-backface-visibility: hidden;
+ backface-visibility: hidden;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+}
+.card-back {
+ transform: rotateY(180deg);
+}
+.nav-link.active {
+ color: #2563eb;
+ font-weight: 600;
+}
+.pathway-line {
+ width: 4px;
+ background-color: #d1d5db;
+}
+.pathway-dot {
+ width: 24px;
+ height: 24px;
+ border-radius: 50%;
+ border: 4px solid #d1d5db;
+ background-color: #f9fafb;
+ z-index: 10;
+}

@@ -4,60 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Cloud Digital Leader Program</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chosen Palette: Warm Neutrals (Stone/Slate with Blue Accents) -->
     <!-- Application Structure Plan: The application uses a single-page, vertical scroll layout with a sticky navigation header. The core content is organized into six interactive "competency cards". This structure was chosen over a simple text layout to encourage user engagement. By clicking a card, the user actively seeks information, which improves retention. The cards are arranged around a central "Learning Pathway" visual, which frames the modules as a cohesive journey rather than isolated topics, reinforcing the concept of progressive skill-building. This interactive, guided-path structure makes the content more intuitive and compelling for prospective learners. -->
     <!-- Visualization & Content Choices: Report Info: Six modules, each with a 'challenge' and 'advantage'. Goal: Inform and Organize. Viz/Presentation Method: Interactive flip cards for each module and a central, non-data "Learning Pathway" diagram built with HTML/CSS. Interaction: Clicking a card flips it to reveal details. Clicking a nav link or pathway node scrolls to the relevant section. Justification: Since the source data is qualitative, traditional charts are unsuitable. The interactive cards break down information into digestible chunks, preventing user overload. The pathway diagram provides a visual metaphor for the learning journey, which is more effective for this type of content than a list or table. Library/Method: Vanilla JS for interactions, Tailwind CSS for styling. -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .perspective {
-            perspective: 1000px;
-        }
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.7s;
-            transform-style: preserve-3d;
-        }
-        .card.is-flipped .card-inner {
-            transform: rotateY(180deg);
-        }
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .card-back {
-            transform: rotateY(180deg);
-        }
-        .nav-link.active {
-            color: #2563eb;
-            font-weight: 600;
-        }
-        .pathway-line {
-            width: 4px;
-            background-color: #d1d5db;
-        }
-        .pathway-dot {
-             width: 24px;
-             height: 24px;
-             border-radius: 50%;
-             border: 4px solid #d1d5db;
-             background-color: #f9fafb;
-             z-index: 10;
-        }
+        @import "tailwindcss";
     </style>
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link href="/dist/output.css" rel="stylesheet">
 </head>
 <body class="bg-stone-50 text-stone-800">
 
@@ -77,8 +33,15 @@
         </section>
 
         <section id="pathway" class="mb-16 md:mb-24">
-             <h2 class="text-3xl font-bold text-center text-blue-900 mb-4">Your Learning Pathway</h2>
-             <p class="text-lg text-stone-600 text-center mb-12 max-w-2xl mx-auto">This program is structured to build your capabilities progressively. Click any card below to explore the core competencies, challenges, and the strategic advantages you will gain.</p>
+             <h2 class="text-3xl font-bold text-center text-blue-900 mb-8">Program Modules</h2>
+             <ul class="list-disc list-inside text-lg text-stone-600 text-center mb-12 max-w-2xl mx-auto space-y-2">
+                <li><a href="/1-digital-transformation.html" class="text-blue-600 hover:underline">Digital Transformation</a></li>
+                <li><a href="/2-data.html" class="text-blue-600 hover:underline">Data Transformation</a></li>
+                <li><a href="/3-ml.html" class="text-blue-600 hover:underline">Applied Machine Learning</a></li>
+                <li><a href="/4-migration.html" class="text-blue-600 hover:underline">Infrastucture and Modernization</a></li>
+                <li><a href="/5-Security.html" class="text-blue-600 hover:underline">Security</a></li>
+                <li><a href="/6-Control.html" class="text-blue-600 hover:underline">Financial Operation Governance</a></li>
+             </ul>
 
             <div id="core-competencies" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             </div>
@@ -138,6 +101,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const navMenu = document.getElementById('nav-menu');
+            // Remove the following lines to disable the interactive cards and their associated JavaScript
             const competenciesContainer = document.getElementById('core-competencies');
 
             competencies.forEach(comp => {
