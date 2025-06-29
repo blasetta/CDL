@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovating with Google Cloud AI</title>
+    <!-- Chosen Palette: Warm Neutrals (Beige, Gray, Muted Blue Accent) -->
+    <!-- Application Structure Plan: Designed a non-linear, interactive SPA with a top navigation bar. The structure is thematic (Essentials, Spectrum, Solutions, GenAI, Agents, Activities, Quiz, Decision Helper) rather than mirroring the source PDF's chapters. This allows users to explore topics based on interest. Key interactions include clickable diagrams, tabbed content, an interactive quiz, and a final interactive filter section ('Choosing Your Path') to provide personalized recommendations, making the information more actionable and user-centric. -->
+    <!-- Visualization & Content Choices: 
+    - AI/ML Concepts: Goal=Organize, Method=Interactive HTML/CSS diagram, Interaction=Click to reveal text. Justification=Visual representation is better than a list.
+    - AI Spectrum: Goal=Compare, Method=Bar Chart (Chart.js), Interaction=Clicking chart bars updates text details. Justification=Quantifies abstract concepts like 'expertise required'.
+    - Business Problems: Goal=Inform, Method=Static HTML cards. Justification=Clear, direct presentation of case studies without distracting animations.
+    - Data Quality: Goal=Inform, Method=Interactive HTML diagram, Interaction=Click to highlight and explain. Justification=Breaks down a list into a visual, explorable component.
+    - Agent Ecosystem: Goal=Organize, Method=HTML/CSS concept map, Interaction=Click node for info. Justification=Shows relationships between complex technologies.
+    - Activities: Goal=Guide/Reflect, Method=Thematic text cards, Interaction=None. Justification=Provides space for strategic thinking and workshop-style discussion.
+    - Quiz: Goal=Test Knowledge, Method=Interactive HTML/JS quiz, Interaction=Select answer, get feedback. Justification=Reinforces learning in an engaging way.
+    - Selection Criteria: Goal=Guide/Personalize, Method=Radar Chart (Chart.js) & filters, Interaction=User selection on filters updates the chart. Justification=Provides a powerful, personalized tool for decision-making. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3f3c3a;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            max-height: 400px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .tab.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .agent-node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .agent-node:hover, .agent-node.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .agent-line {
+            position: absolute;
+            background-color: #9ca3af;
+            z-index: -1;
+        }
+        .quiz-option {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .quiz-option:hover {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">Google Cloud AI</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#essentials" class="nav-link border-b-2 border-transparent pb-1">Essentials</a>
+                <a href="#spectrum" class="nav-link border-b-2 border-transparent pb-1">The AI Spectrum</a>
+                <a href="#solutions" class="nav-link border-b-2 border-transparent pb-1">AI Solutions</a>
+                <a href="#generative" class="nav-link border-b-2 border-transparent pb-1">Generative AI</a>
+                <a href="#agents" class="nav-link border-b-2 border-transparent pb-1">AI Agents</a>
+                <a href="#activities" class="nav-link border-b-2 border-transparent pb-1">Activities</a>
+                <a href="#quiz" class="nav-link border-b-2 border-transparent pb-1">Knowledge Check</a>
+                <a href="#chooser" class="nav-link border-b-2 border-transparent pb-1">Find Your Path</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="#essentials" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Essentials</a>
+            <a href="#spectrum" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">The AI Spectrum</a>
+            <a href="#solutions" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">AI Solutions</a>
+            <a href="#generative" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Generative AI</a>
+            <a href="#agents" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">AI Agents</a>
+            <a href="#activities" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Activities</a>
+            <a href="#quiz" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Knowledge Check</a>
+            <a href="#chooser" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Find Your Path</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="hero" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Innovating with Artificial Intelligence</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive guide to understanding and leveraging Google Cloud's powerful suite of AI and Machine Learning tools, from fundamental concepts to advanced agentic frameworks.</p>
+        </section>
+
+        <section id="essentials" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">AI & ML Essentials</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Grasp the core concepts that form the foundation of modern artificial intelligence. This section breaks down the key definitions, distinguishes AI from traditional analytics, and highlights the business problems it's best suited to solve.</p>
+            
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="font-semibold text-xl mb-4 text-center">The AI Umbrella</h4>
+                    <div id="ai-ml-diagram" class="relative flex flex-col items-center p-4">
+                        <div class="bg-blue-500 text-white px-6 py-3 rounded-full shadow-md z-10 cursor-pointer" data-info="ai">Artificial Intelligence</div>
+                        <div class="w-px h-16 bg-gray-300"></div>
+                        <div class="flex space-x-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-px h-8 bg-gray-300"></div>
+                                <div class="bg-blue-300 text-blue-800 px-4 py-2 rounded-full shadow-sm cursor-pointer" data-info="ml">Machine Learning</div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-px h-8 bg-gray-300"></div>
+                                <div class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full shadow-sm cursor-pointer" data-info="other">Other Fields</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="ai-ml-info" class="mt-4 text-gray-600 text-center min-h-[50px]">Click on the terms above to see their definitions.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="font-semibold text-xl mb-4 text-center">Business Problems ML Can Solve</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-amber-100 p-4 rounded-lg shadow-md h-40 flex flex-col justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                            <p class="font-semibold text-amber-800">Simplify Rule-Based Systems</p>
+                            <p class="text-sm text-amber-900 mt-2">Example: Google Search ranking results based on learned patterns instead of complex, static rules.</p>
+                        </div>
+                        <div class="bg-lime-100 p-4 rounded-lg shadow-md h-40 flex flex-col justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                            <p class="font-semibold text-lime-800">Automate Processes</p>
+                            <p class="text-sm text-lime-900 mt-2">Example: Automatically routing customer support tickets based on email content.</p>
+                        </div>
+                        <div class="bg-sky-100 p-4 rounded-lg shadow-md h-40 flex flex-col justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                            <p class="font-semibold text-sky-800">Understand Unstructured Data</p>
+                            <p class="text-sm text-sky-900 mt-2">Example: Analyzing images and videos to identify objects, sentiment, and text.</p>
+                        </div>
+                        <div class="bg-violet-100 p-4 rounded-lg shadow-md h-40 flex flex-col justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                            <p class="font-semibold text-violet-800">Personalization</p>
+                            <p class="text-sm text-violet-900 mt-2">Example: YouTube recommending "Up Next" videos tailored to your viewing habits.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="spectrum" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">The Google Cloud AI Spectrum</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Google Cloud offers a range of AI/ML options, each designed for different needs, datasets, and levels of technical expertise. Explore the spectrum from ready-to-use APIs to fully custom-built models to see where your project fits.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="spectrumChart"></canvas>
+                </div>
+                <div id="spectrum-details" class="mt-8 p-6 bg-gray-50 rounded-lg min-h-[150px]">
+                    <p class="text-gray-500 text-center">Click a bar on the chart to see details about each approach.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="solutions" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">Specialized AI Solutions</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">For common industry challenges, Google offers fully-managed AI solutions that combine powerful models with industry-specific knowledge to accelerate business transformation.</p>
+            <div id="solutions-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            </div>
+        </section>
+
+        <section id="generative" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">Google's Generative AI Toolkit</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Explore the cutting-edge tools that empower developers and creators to build with generative AI. From the powerful, multimodal Gemini model to specialized assistants, this is the frontier of AI innovation.</p>
+             <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="border-b border-gray-200 mb-6">
+                    <nav id="gen-ai-tabs" class="-mb-px flex space-x-6" aria-label="Tabs">
+                    </nav>
+                </div>
+                <div id="gen-ai-content" class="min-h-[250px]">
+                </div>
+            </div>
+        </section>
+
+        <section id="agents" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">The Rise of AI Agents</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">AI is evolving from single-task tools to autonomous agents that can reason, plan, and execute complex workflows. Discover the platforms and frameworks enabling this shift towards more capable and collaborative AI systems.</p>
+            <div class="bg-white p-8 rounded-xl shadow-lg flex flex-col lg:flex-row gap-8">
+                <div id="agent-diagram" class="flex-grow relative h-96 lg:h-auto">
+                </div>
+                <div id="agent-info" class="lg:w-1/3 bg-gray-50 p-6 rounded-lg">
+                    <h4 class="font-bold text-lg mb-2">Agent Details</h4>
+                    <p class="text-gray-600">Click on a node in the diagram to learn more about it.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="activities" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">Putting It Into Practice</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Adopting these powerful AI tools isn't just a technical exercise; it's a strategic one. Before leveraging AI, organizations must often modernize their applications and infrastructure. The following activities are designed to help you reflect on these crucial first steps.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="font-semibold text-xl mb-3">Activity 1: Modernization Strategies</h4>
+                    <p class="font-medium text-gray-800 mb-4">Identify key modernization strategies in the projects that you are actually working on.</p>
+                    <h5 class="font-semibold text-gray-700 mb-2">Explanation:</h5>
+                    <p class="text-sm text-gray-600">To effectively use cloud AI services like BigQuery ML or Vertex AI, your data and applications must be accessible and optimized for the cloud. This activity prompts you to think about your current projects and identify how they could be modernized. Consider strategies like **re-hosting** (lifting and shifting), **re-platforming** (making cloud optimizations without changing core architecture), or **re-factoring** (re-architecting for a cloud-native environment). A clear modernization strategy is the bridge between your current systems and your future AI capabilities.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h4 class="font-semibold text-xl mb-3">Activity 2: Migration, Security & Tradition</h4>
+                    <p class="font-medium text-gray-800 mb-4">In which cases is it not advisable to migrate? How can you ensure security and tradition?</p>
+                    <h5 class="font-semibold text-gray-700 mb-2">Explanation:</h5>
+                    <p class="text-sm text-gray-600">Cloud migration isn't always the answer. This activity encourages critical thinking about when *not* to migrate. Certain systems might remain on-premises due to extreme low-latency requirements, complex dependencies, or strict regulatory/data sovereignty laws. For systems you do migrate, "tradition" (your established business rules and security posture) must be preserved. This means implementing robust cloud security using a shared responsibility model, managing access with tools like IAM, and ensuring data is encrypted both in transit and at rest, thus upholding your security standards in a new environment.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="quiz" class="mb-24 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">Knowledge Check</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Test your understanding of the key concepts with this interactive quiz. You'll receive immediate feedback to help reinforce your learning.</p>
+            <div id="quiz-container" class="bg-white p-6 sm:p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+            </div>
+        </section>
+
+        <section id="chooser" class="scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-2">Find Your Path</h3>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">Not sure where to start? Answer a few questions about your project, and we'll help you identify the most suitable Google Cloud AI approach based on your needs for speed, differentiation, expertise, and effort.</p>
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold text-xl mb-4">Project Characteristics</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="expertise-filter" class="block text-sm font-medium text-gray-700">Required Expertise?</label>
+                                <select id="expertise-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option value="1">Low (e.g., Business Analyst)</option>
+                                    <option value="2">Medium (e.g., Developer, Data Analyst)</option>
+                                    <option value="3">High (e.g., Data Scientist)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="speed-filter" class="block text-sm font-medium text-gray-700">Need for Speed?</label>
+                                <select id="speed-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option value="3">Very Fast (Days/Weeks)</option>
+                                    <option value="2">Moderate (Weeks/Months)</option>
+                                    <option value="1">Flexible (Months+)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="diff-filter" class="block text-sm font-medium text-gray-700">Need for Differentiation?</label>
+                                <select id="diff-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option value="1">Low (Standard problem)</option>
+                                    <option value="2">Medium (Some customization needed)</option>
+                                    <option value="3">High (Completely unique solution)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chooserChart"></canvas>
+                    </div>
+                </div>
+                <div id="chooser-recommendation" class="mt-8 text-center p-4 bg-blue-50 text-blue-800 rounded-lg">
+                    <p>Your ideal approach will be highlighted on the chart.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-4 text-center">
+            <p>&copy; 2025 Interactive AI Guide. All information is based on the provided source material.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const data = {
+                ai_ml_info: {
+                    ai: "<strong>Artificial Intelligence (AI):</strong> A broad field of computer science dedicated to building machines that can mimic human cognitive functions like learning, reasoning, and problem-solving.",
+                    ml: "<strong>Machine Learning (ML):</strong> A subset of AI where algorithms learn patterns from data without being explicitly programmed. It's the engine that powers many AI applications.",
+                    other: "<strong>Other Fields:</strong> Includes areas like Robotics, Expert Systems, and Natural Language Processing, which are all part of the broader AI landscape."
+                },
+                spectrum: {
+                    "Pre-trained APIs": {
+                        description: "Use powerful, ready-made models trained by Google for common tasks like image analysis or translation. No ML expertise required.",
+                        user: "Developers, Business Analysts",
+                        use_case: "Adding intelligence to apps without collecting data or training models.",
+                        expertise: 1,
+                        speed: 3
+                    },
+                    "BigQuery ML": {
+                        description: "Create and run ML models directly in BigQuery using familiar SQL commands. Ideal for analyzing large datasets already in a data warehouse.",
+                        user: "Data Analysts, SQL Developers",
+                        use_case: "Predictive analytics, segmentation, and forecasting on tabular data.",
+                        expertise: 1.5,
+                        speed: 2.5
+                    },
+                    "AutoML": {
+                        description: "Train high-quality custom models on your own data with minimal ML expertise, using an intuitive graphical interface on Vertex AI.",
+                        user: "Developers, Data Analysts, Citizen Data Scientists",
+                        use_case: "Creating custom image classification or language models for specific business needs.",
+                        expertise: 2,
+                        speed: 2
+                    },
+                    "Custom Training": {
+                        description: "Build, train, and deploy highly specialized models with full control over the architecture and training process on Vertex AI.",
+                        user: "Data Scientists, ML Engineers",
+                        use_case: "Solving novel problems that require unique model architectures and cutting-edge techniques.",
+                        expertise: 3,
+                        speed: 1
+                    }
+                },
+                solutions: [
+                    { name: "Contact Center AI", desc: "Transforms customer service with conversational AI, virtual agents, and real-time assistance for human agents." },
+                    { name: "Document AI", desc: "Unlocks insights from unstructured documents by extracting, classifying, and enriching data from forms, invoices, etc." },
+                    { name: "Discovery AI for Retail", desc: "Optimizes product search, browsing, and recommendations for e-commerce sites to increase sales." },
+                    { name: "Cloud Talent Solution", desc: "Brings AI-powered search and matching capabilities to the talent acquisition process, improving job discovery." }
+                ],
+                gen_ai_tools: [
+                    { 
+                        name: "Gemini", 
+                        content: `<h4 class="font-bold text-xl mb-3">Gemini: The Multimodal Model</h4>
+                                  <p class="text-gray-600 mb-4">Google's flagship family of models, natively multimodal to understand and combine text, code, images, audio, and video. It comes in various sizes (Pro, Flash, Ultra) and powers many Google products.</p>
+                                  <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700"><strong>Key takeaway:</strong> A single, powerful model that can reason across different types of information at once.</div>` 
+                    },
+                    { 
+                        name: "NotebookLM", 
+                        content: `<h4 class="font-bold text-xl mb-3">NotebookLM: Your Research Assistant</h4>
+                                  <p class="text-gray-600 mb-4">A personalized AI research tool that grounds itself in the documents you provide. Upload PDFs, web pages, or notes, and NotebookLM becomes an expert in your information, helping you summarize, ask questions, and generate ideas.</p>
+                                  <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700"><strong>Key takeaway:</strong> Your personal AI that knows your content inside and out, perfect for study and analysis.</div>`
+                    },
+                    { 
+                        name: "Gemini CLI", 
+                        content: `<h4 class="font-bold text-xl mb-3">Gemini CLI: AI in Your Terminal</h4>
+                                  <p class="text-gray-600 mb-4">An open-source command-line interface that brings Gemini's power to developers' terminals. It can understand your codebase, help debug issues, and automate tasks using natural language.</p>
+                                  <a href="https://github.com/google-gemini/gemini-cli" target="_blank" class="text-blue-600 hover:underline">View on GitHub &rarr;</a>
+                                  <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700 mt-4"><strong>Key takeaway:</strong> A productivity booster for developers, integrating AI help directly into their workflow.</div>`
+                    },
+                     { 
+                        name: "More Tools", 
+                        content: `<h4 class="font-bold text-xl mb-3">The Broader Ecosystem</h4>
+                                  <ul class="list-disc list-inside text-gray-600 space-y-2">
+                                    <li><strong>Imagen:</strong> A family of advanced text-to-image models for creating high-quality, realistic visuals.</li>
+                                    <li><strong>Gemini in Workspace:</strong> AI assistance embedded in apps like Docs, Gmail, and Sheets to boost productivity.</li>
+                                    <li><strong>Gemma:</strong> Lightweight, open-source models based on Gemini research for the developer community.</li>
+                                  </ul>` 
+                    },
+                ],
+                agents: {
+                    nodes: [
+                        { id: 'agents', label: 'AI Agents', x: 50, y: 5, type: 'core' },
+                        { id: 'google', label: 'Google Solutions', x: 50, y: 25, type: 'platform' },
+                        { id: 'agentspace', label: 'AgentSpace', x: 30, y: 45, type: 'product' },
+                        { id: 'mcp', label: 'MCP', x: 70, y: 45, type: 'product' },
+                        { id: 'frameworks', label: 'Orchestration Frameworks', x: 50, y: 65, type: 'platform' },
+                        { id: 'langchain', label: 'LangChain', x: 15, y: 85, type: 'tool' },
+                        { id: 'langgraph', label: 'LangGraph', x: 50, y: 85, type: 'tool' },
+                        { id: 'crewai', label: 'CrewAI', x: 85, y: 85, type: 'tool' },
+                    ],
+                    edges: [
+                        { from: 'agents', to: 'google' },
+                        { from: 'google', to: 'agentspace' },
+                        { from: 'google', to: 'mcp' },
+                        { from: 'agents', to: 'frameworks' },
+                        { from: 'frameworks', to: 'langchain' },
+                        { from: 'frameworks', to: 'langgraph' },
+                        { from: 'frameworks', to: 'crewai' },
+                    ],
+                    info: {
+                        agents: 'Autonomous systems that perceive their environment, make decisions, and take actions to achieve goals.',
+                        google: 'Google provides enterprise-ready platforms and protocols to build and manage AI agents securely.',
+                        agentspace: 'An enterprise hub for search and AI agents. It connects to your work apps to create a unified knowledge base for agents to act upon.',
+                        mcp: 'The Model-Context Protocol is an open standard for how AI agents connect to tools and data, acting like a universal adapter.',
+                        frameworks: 'Open-source tools that provide the structure to build, test, and run complex agentic workflows.',
+                        langchain: 'A popular framework for creating "chains" or sequences of calls to LLMs, tools, and data sources.',
+                        langgraph: 'An extension of LangChain for creating complex, cyclical agent workflows with loops and conditional logic.',
+                        crewai: 'A framework for orchestrating role-playing agents that collaborate as a "crew" to solve complex tasks together.',
+                    }
+                },
+                quiz: [
+                    {
+                        question: "What is generative AI?",
+                        options: [
+                            "A type of AI that can understand and respond to human emotions",
+                            "A type of AI that can produce new content, including text, images, and audio",
+                            "A type of AI that can make decisions and take actions",
+                            "A type of AI that can create and sustain its own consciousness"
+                        ],
+                        correct: 1,
+                        explanation: "Generative AI focuses on creating novel content across various modalities, such as an AI tool generating product descriptions from a list of features or a system writing a personalized marketing email."
+                    },
+                    {
+                        question: "Which of these is a generative AI use case?",
+                        options: [
+                            "Self-driving cars",
+                            "Spam filtering",
+                            "Conversational bots",
+                            "Image recognition"
+                        ],
+                        correct: 2,
+                        explanation: "Conversational bots (particularly advanced ones) often use generative AI to craft creative, context-aware, and fluent responses, demonstrating a core generative AI strength."
+                    },
+                    {
+                        question: "An online retailer wants to help users find products by uploading an image. Which Google pre-trained API is best for this?",
+                        options: [
+                            "Vision API",
+                            "Natural Language API",
+                            "Speech-to-Text API",
+                            "Video Intelligence API"
+                        ],
+                        correct: 0,
+                        explanation: "The Vision API directly supports image search. Users upload a picture, and the Vision API processes it to understand what's in the image. The retailer can then match those features to products in their catalog."
+                    },
+                    {
+                        question: "Which Google Cloud AI solution is specifically designed to help businesses improve their customer service?",
+                        options: [
+                             "Document AI",
+                             "Contact Center AI",
+                             "Discovery AI for Retail",
+                             "Cloud Talent Solution"
+                        ],
+                        correct: 1,
+                        explanation: "Contact Center AI is designed specifically to improve customer service. It offers features like virtual agents (chatbots), real-time guidance for human agents, and call transcript analysis."
+                    }
+                ]
+            };
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            mobileMenu.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            const aiMlDiagram = document.getElementById('ai-ml-diagram');
+            const aiMlInfo = document.getElementById('ai-ml-info');
+            aiMlDiagram.addEventListener('click', (e) => {
+                const infoKey = e.target.dataset.info;
+                if (infoKey && data.ai_ml_info[infoKey]) {
+                    aiMlInfo.innerHTML = data.ai_ml_info[infoKey];
+                }
+            });
+
+            const spectrumCtx = document.getElementById('spectrumChart').getContext('2d');
+            const spectrumLabels = Object.keys(data.spectrum);
+            const spectrumChart = new Chart(spectrumCtx, {
+                type: 'bar',
+                data: {
+                    labels: spectrumLabels,
+                    datasets: [{
+                        label: 'Required Expertise (1=Low, 3=High)',
+                        data: spectrumLabels.map(l => data.spectrum[l].expertise),
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Speed to Production (1=Slow, 3=Fast)',
+                        data: spectrumLabels.map(l => data.spectrum[l].speed),
+                        backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                        borderColor: 'rgba(234, 179, 8, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 3.5 }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = spectrumLabels[index];
+                            const details = data.spectrum[label];
+                            document.getElementById('spectrum-details').innerHTML = `
+                                <h4 class="font-bold text-lg mb-2">${label}</h4>
+                                <p class="text-gray-700 mb-2">${details.description}</p>
+                                <p class="text-sm"><strong class="font-semibold">Best for:</strong> ${details.user}</p>
+                                <p class="text-sm"><strong class="font-semibold">Use Case:</strong> ${details.use_case}</p>
+                            `;
+                        }
+                    },
+                     plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const solutionsGrid = document.getElementById('solutions-grid');
+            data.solutions.forEach(solution => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300';
+                card.innerHTML = `
+                    <h4 class="font-semibold text-xl mb-2">${solution.name}</h4>
+                    <p class="text-gray-600 text-sm">${solution.desc}</p>
+                `;
+                solutionsGrid.appendChild(card);
+            });
+
+            const genAiTabs = document.getElementById('gen-ai-tabs');
+            const genAiContent = document.getElementById('gen-ai-content');
+            data.gen_ai_tools.forEach((tool, index) => {
+                const tab = document.createElement('a');
+                tab.href = '#';
+                tab.className = `tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300`;
+                if (index === 0) tab.classList.add('active');
+                tab.textContent = tool.name;
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('#gen-ai-tabs .tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    genAiContent.innerHTML = tool.content;
+                });
+                genAiTabs.appendChild(tab);
+            });
+            genAiContent.innerHTML = data.gen_ai_tools[0].content;
+
+            const agentDiagram = document.getElementById('agent-diagram');
+            const agentInfo = document.getElementById('agent-info');
+            data.agents.nodes.forEach(node => {
+                const nodeEl = document.createElement('div');
+                const typeClasses = {
+                    core: 'bg-blue-600 text-white font-bold',
+                    platform: 'bg-blue-400 text-white',
+                    product: 'bg-sky-200 text-sky-800',
+                    tool: 'bg-gray-200 text-gray-800'
+                };
+                nodeEl.className = `agent-node absolute p-2 rounded-lg shadow-md text-center text-xs md:text-sm ${typeClasses[node.type]}`;
+                nodeEl.style.left = `${node.x}%`;
+                nodeEl.style.top = `${node.y}%`;
+                nodeEl.style.transform = 'translate(-50%, -50%)';
+                nodeEl.textContent = node.label;
+                nodeEl.dataset.id = node.id;
+                agentDiagram.appendChild(nodeEl);
+            });
+            data.agents.edges.forEach(edge => {
+                const fromNode = agentDiagram.querySelector(`[data-id="${edge.from}"]`);
+                const toNode = agentDiagram.querySelector(`[data-id="${edge.to}"]`);
+                const fromRect = { x: parseFloat(fromNode.style.left), y: parseFloat(fromNode.style.top) };
+                const toRect = { x: parseFloat(toNode.style.left), y: parseFloat(toNode.style.top) };
+                
+                const line = document.createElement('div');
+                line.className = 'agent-line';
+                const angle = Math.atan2(toRect.y - fromRect.y, toRect.x - fromRect.x) * 180 / Math.PI;
+                const length = Math.sqrt(Math.pow(toRect.x - fromRect.x, 2) + Math.pow(toRect.y - fromRect.y, 2));
+                line.style.width = `${length}%`;
+                line.style.height = '2px';
+                line.style.left = `${fromRect.x}%`;
+                line.style.top = `${fromRect.y}%`;
+                line.style.transformOrigin = '0 0';
+                line.style.transform = `rotate(${angle}deg)`;
+                agentDiagram.prepend(line);
+            });
+            agentDiagram.addEventListener('click', (e) => {
+                const nodeEl = e.target.closest('.agent-node');
+                if (nodeEl) {
+                    const id = nodeEl.dataset.id;
+                    agentInfo.innerHTML = `
+                        <h4 class="font-bold text-lg mb-2">${nodeEl.textContent}</h4>
+                        <p class="text-gray-600">${data.agents.info[id]}</p>
+                    `;
+                    agentDiagram.querySelectorAll('.agent-node').forEach(n => n.classList.remove('active', 'ring-2', 'ring-blue-500'));
+                    nodeEl.classList.add('active', 'ring-2', 'ring-blue-500');
+                }
+            });
+
+            const quizContainer = document.getElementById('quiz-container');
+            let currentQuestionIndex = 0;
+            let score = 0;
+
+            function renderQuiz() {
+                if (currentQuestionIndex >= data.quiz.length) {
+                    quizContainer.innerHTML = `
+                        <h4 class="text-xl font-bold text-center mb-4">Quiz Complete!</h4>
+                        <p class="text-center text-gray-700 mb-6">You scored ${score} out of ${data.quiz.length}.</p>
+                        <div class="text-center">
+                            <button id="restart-quiz-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">Restart Quiz</button>
+                        </div>
+                    `;
+                    document.getElementById('restart-quiz-btn').addEventListener('click', () => {
+                        currentQuestionIndex = 0;
+                        score = 0;
+                        renderQuiz();
+                    });
+                    return;
+                }
+
+                const question = data.quiz[currentQuestionIndex];
+                let optionsHtml = '';
+                question.options.forEach((option, index) => {
+                    optionsHtml += `<button data-index="${index}" class="quiz-option w-full text-left p-4 border-2 border-gray-200 rounded-lg mb-3">${option}</button>`;
+                });
+
+                quizContainer.innerHTML = `
+                    <p class="text-sm text-gray-500 mb-2">Question ${currentQuestionIndex + 1} of ${data.quiz.length}</p>
+                    <h4 class="text-lg font-semibold mb-6">${question.question}</h4>
+                    <div id="quiz-options">${optionsHtml}</div>
+                    <div id="quiz-feedback" class="mt-4"></div>
+                `;
+
+                document.getElementById('quiz-options').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('quiz-option')) {
+                        handleAnswer(e.target);
+                    }
+                });
+            }
+            
+            function handleAnswer(selectedButton) {
+                const selectedIndex = parseInt(selectedButton.dataset.index);
+                const question = data.quiz[currentQuestionIndex];
+                const feedbackEl = document.getElementById('quiz-feedback');
+                
+                document.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true);
+
+                if (selectedIndex === question.correct) {
+                    score++;
+                    selectedButton.classList.add('correct');
+                    feedbackEl.innerHTML = `<p class="text-green-700 font-semibold">Correct!</p>`;
+                } else {
+                    selectedButton.classList.add('incorrect');
+                    document.querySelector(`.quiz-option[data-index='${question.correct}']`).classList.add('correct');
+                    feedbackEl.innerHTML = `<p class="text-red-700 font-semibold">Incorrect.</p>`;
+                }
+                
+                feedbackEl.innerHTML += `<p class="text-sm text-gray-600 mt-2">${question.explanation}</p>
+                                         <div class="text-right mt-4">
+                                            <button id="next-question-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">Next</button>
+                                         </div>`;
+                
+                document.getElementById('next-question-btn').addEventListener('click', () => {
+                    currentQuestionIndex++;
+                    renderQuiz();
+                });
+            }
+
+            renderQuiz();
+
+            const chooserCtx = document.getElementById('chooserChart').getContext('2d');
+            const chooserData = {
+                labels: ['Speed', 'Differentiation', 'Low Effort', 'Low Expertise'],
+                datasets: [
+                    { label: 'Pre-trained APIs', data: [3, 1, 3, 3], borderColor: 'rgba(255, 99, 132, 1)', backgroundColor: 'rgba(255, 99, 132, 0.2)', borderWidth: 2 },
+                    { label: 'BigQuery ML', data: [2.5, 1.5, 2.5, 2.5], borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', borderWidth: 2, hidden: true },
+                    { label: 'AutoML', data: [2, 2, 2, 2], borderColor: 'rgba(255, 206, 86, 1)', backgroundColor: 'rgba(255, 206, 86, 0.2)', borderWidth: 2, hidden: true },
+                    { label: 'Custom Training', data: [1, 3, 1, 1], borderColor: 'rgba(75, 192, 192, 1)', backgroundColor: 'rgba(75, 192, 192, 0.2)', borderWidth: 2, hidden: true }
+                ]
+            };
+            const chooserChart = new Chart(chooserCtx, {
+                type: 'radar',
+                data: chooserData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 3.5,
+                            pointLabels: { font: { size: 14 } },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            const filters = [
+                document.getElementById('expertise-filter'),
+                document.getElementById('speed-filter'),
+                document.getElementById('diff-filter')
+            ];
+            
+            const recommendationEl = document.getElementById('chooser-recommendation');
+            const recommendations = {
+                "3,3,1": { name: "Pre-trained APIs", text: "Pre-trained APIs are your fastest path to production with minimal expertise needed for standard problems." },
+                "2,3,2": { name: "Pre-trained APIs", text: "For slightly more unique problems where speed is key, Pre-trained APIs are still a strong starting point." },
+                "2,2,1": { name: "BigQuery ML", text: "If your data is in BigQuery and you're comfortable with SQL, BQML is a great mid-speed option." },
+                "2,2,2": { name: "AutoML", text: "AutoML is the sweet spot for custom problems when you have data but not a dedicated ML team." },
+                "3,2,2": { name: "AutoML", text: "AutoML provides a good balance of customization and speed for teams with ML expertise." },
+                "3,1,3": { name: "Custom Training", text: "For completely unique, groundbreaking projects, Custom Training gives you full control, even if it takes longer." },
+            };
+
+            function updateChooser() {
+                const expertise = parseInt(filters[0].value);
+                const speed = parseInt(filters[1].value);
+                const diff = parseInt(filters[2].value);
+
+                const scores = {
+                    'Pre-trained APIs': (speed * 1.5) + ((4 - expertise) * 1) + ((4 - diff) * 0.5),
+                    'BigQuery ML':      (speed * 1) + ((4 - expertise) * 1.2) + ((4 - diff) * 1),
+                    'AutoML':           (speed * 1) + ((4 - expertise) * 1) + (diff * 1.2),
+                    'Custom Training':  (speed * 0.5) + (expertise * 1) + (diff * 1.5)
+                };
+
+                let maxScore = -1;
+                let bestFit = '';
+                for (const [key, value] of Object.entries(scores)) {
+                    if (value > maxScore) {
+                        maxScore = value;
+                        bestFit = key;
+                    }
+                }
+                
+                chooserChart.data.datasets.forEach(dataset => {
+                    dataset.hidden = dataset.label !== bestFit;
+                });
+                chooserChart.update();
+                
+                const recKey = `${expertise},${speed},${diff}`;
+                const recommendation = recommendations[recKey] || { name: bestFit, text: `Based on your selections, ${bestFit} seems like a strong candidate for your project.` };
+
+                recommendationEl.innerHTML = `<p class="font-semibold">${recommendation.name} Recommended</p><p class="text-sm">${recommendation.text}</p>`;
+            }
+
+            filters.forEach(filter => filter.addEventListener('change', updateChooser));
+            updateChooser();
+
+        });
+    </script>
+</body>
+</html>

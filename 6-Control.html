@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Google Cloud Operations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Accents -->
+    <!-- Application Structure Plan: A tab-based single-page application (SPA) is chosen to logically segment the dense report content into its three core pillars: Financial Governance, Operational Excellence, and Sustainability. This structure prevents overwhelming the user with a long scroll and allows for focused exploration. The user flow is simple: land on the first tab and navigate freely. Interactions within each tab—such as clickable diagrams for the resource hierarchy, toggles for best practices, and interactive cards for complex concepts like SLOs—are designed to encourage user engagement and deepen understanding by revealing information progressively. A dynamic bar chart is included in the finance section to provide a tangible, quantitative interaction. An interactive quiz is added at the end to reinforce learning. -->
+    <!-- Visualization & Content Choices: 
+        - Financial Governance: Goal is to demystify cloud cost management. The People/Process/Technology framework is presented as interactive cards. The Resource Hierarchy is a custom HTML/CSS diagram, making an abstract concept tangible; clicking highlights a level and shows its details. A dynamic bar chart simulates cost changes based on support plans.
+        - Operational Excellence: Goal is to clarify advanced SRE concepts. Monitoring vs. Observability is a direct side-by-side comparison. The Three Pillars and Four Golden Signals are shown as interactive info cards. The SLI/SLO/SLA relationship is visualized with an interactive HTML flow diagram where clicking a concept reveals its details. An accordion is used for Customer Care levels.
+        - Sustainability: Goal is to present Google's environmental commitments impactfully. A visual HTML/CSS timeline is used for milestones. Key stats and the ISO certification are highlighted in prominent cards.
+        - Quiz: An interactive multiple-choice quiz reinforces key takeaways from all sections.
+        - Chart.js is used for the cost comparison bar chart for its simplicity and responsiveness. All other visuals are pure HTML/CSS to adhere to the NO SVG/Mermaid rule.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F7F9FC;
+            color: #1F2937;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: #2563EB;
+            border-bottom-color: #2563EB;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .info-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .hierarchy-item {
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .hierarchy-item.selected {
+            background-color: #DBEAFE;
+            border-color: #3B82F6;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        .sre-concept {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .sre-concept.selected {
+            background-color: #E0F2FE;
+            border-color: #0EA5E9;
+            transform: scale(1.03);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            border: 4px solid #93C5FD;
+        }
+        .quiz-option {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .quiz-option.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+        }
+        .quiz-option.incorrect {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">An Interactive Guide to Google Cloud Operations</h1>
+            <p class="text-lg text-gray-600 mt-2">Explore the core pillars of managing and scaling a world-class cloud environment.</p>
+        </header>
+
+        <nav class="mb-8 border-b border-gray-200">
+            <ul class="flex flex-wrap justify-center -mb-px">
+                <li><button class="tab-button text-lg font-medium p-4 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600" data-tab="finance">Financial Governance</button></li>
+                <li><button class="tab-button text-lg font-medium p-4 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600" data-tab="ops">Operational Excellence</button></li>
+                <li><button class="tab-button text-lg font-medium p-4 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600" data-tab="sustainability">Sustainability</button></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Financial Governance Tab -->
+            <div id="finance" class="tab-content">
+                <section class="mb-12">
+                    <h2 class="text-3xl font-semibold text-center mb-2">Mastering Cloud Costs</h2>
+                    <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Effective financial governance is critical for maximizing the value of the cloud. It's a shared responsibility that balances agility with fiscal control, built on a foundation of people, processes, and technology.</p>
+                    <div class="grid md:grid-cols-3 gap-8 text-center">
+                        <div class="info-card bg-white p-6 rounded-xl shadow-md"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mx-auto mb-4"><span class="text-3xl">👥</span></div><h3 class="text-xl font-semibold mb-2">People</h3><p class="text-gray-600">Establish a Cloud Center of Excellence (CCoE) with members from Finance, Tech, and Business to foster a culture of cost accountability across the organization.</p></div>
+                        <div class="info-card bg-white p-6 rounded-xl shadow-md"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mx-auto mb-4"><span class="text-3xl">⚙️</span></div><h3 class="text-xl font-semibold mb-2">Process</h3><p class="text-gray-600">Implement regular cadences for monitoring usage, analyzing spend, and attributing costs to the correct teams to identify waste and optimize investments.</p></div>
+                        <div class="info-card bg-white p-6 rounded-xl shadow-md"><div class="flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mx-auto mb-4"><span class="text-3xl">🛠️</span></div><h3 class="text-xl font-semibold mb-2">Technology</h3><p class="text-gray-600">Leverage Google Cloud's built-in tools for visibility, control, and intelligent recommendations, from billing reports to the pricing calculator.</p></div>
+                    </div>
+                </section>
+                <section class="mb-12">
+                    <h2 class="text-3xl font-semibold text-center mb-8">Controlling Access and Consumption</h2>
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-4 text-center">Resource Hierarchy</h3>
+                            <p class="text-gray-600 text-center mb-6">Google Cloud's hierarchy is key to managing access and policies. Click a level to learn more.</p>
+                            <div class="p-6 bg-white rounded-xl shadow-lg"><div id="hierarchy-diagram" class="space-y-4"><div id="org-node" class="hierarchy-item p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50"><p class="font-bold">🏢 Organization Node</p></div><div class="pl-8 border-l-2 border-gray-300 ml-4"><div id="folder-node" class="hierarchy-item p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50 mb-4"><p class="font-bold">📁 Folder</p></div><div class="pl-8 border-l-2 border-gray-300 ml-4"><div id="project-node" class="hierarchy-item p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50 mb-4"><p class="font-bold">🏗️ Project</p></div><div class="pl-8 border-l-2 border-gray-300 ml-4"><div id="resource-node" class="hierarchy-item p-4 border-2 border-gray-300 rounded-lg text-center bg-gray-50"><p class="font-bold">📄 Resource</p></div></div></div></div></div></div>
+                        </div>
+                        <div id="hierarchy-details" class="p-6 bg-white rounded-xl shadow-lg mt-8 md:mt-0 min-h-[300px] flex flex-col justify-center"><h4 class="text-xl font-semibold mb-2" id="details-title">Select a level</h4><p class="text-gray-700" id="details-text">Click on an item in the diagram to see its description here.</p></div>
+                    </div>
+                </section>
+                <section class="mb-12"><h2 class="text-3xl font-semibold text-center mb-8">Simulating Cost Management</h2><p class="text-gray-600 text-center mb-6 max-w-2xl mx-auto">This chart simulates hypothetical monthly costs for a sample workload. Toggle different support plans to see how they might impact overall operational expenditure.</p><div class="bg-white p-6 rounded-xl shadow-lg"><div class="text-center mb-4"><div class="inline-flex rounded-md shadow-sm" role="group"><button type="button" class="cost-sim-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-gray-200 rounded-l-lg hover:bg-blue-700" data-plan="basic">Basic Support</button><button type="button" class="cost-sim-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100" data-plan="standard">Standard</button><button type="button" class="cost-sim-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100" data-plan="enhanced">Enhanced</button><button type="button" class="cost-sim-btn px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100" data-plan="premium">Premium</button></div></div><div class="chart-container"><canvas id="costChart"></canvas></div></div></section>
+                <section class="mt-12">
+                    <h2 class="text-3xl font-semibold text-center mb-8">Reflective Activity</h2>
+                    <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-blue-50 hover:bg-blue-100 rounded-md">
+                                <span>Activity 1: Why are Cost and Operations intrinsically linked?</span>
+                                <span class="accordion-icon text-2xl font-light">+</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-gray-600">
+                                <p class="mt-4">Consider the following points as you reflect on the question:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>How do decisions about reliability (e.g., using multi-region deployments) impact your monthly bill?</li>
+                                    <li>If the operations team needs to scale resources to handle high traffic, what is the immediate effect on costs?</li>
+                                    <li>How can cost management tools (like budget alerts) influence operational decisions in real-time?</li>
+                                    <li>Think about the trade-off between performance/availability and cost. Can you have 100% uptime? What would be the cost?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="ops" class="tab-content">
+                <section class="mb-12"><h2 class="text-3xl font-semibold text-center mb-2">Ensuring System Reliability</h2><p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Operational excellence in the cloud means building resilient, fault-tolerant systems. This requires a shift in mindset from traditional monitoring to modern observability, guided by the principles of Site Reliability Engineering (SRE).</p><div class="bg-white p-8 rounded-xl shadow-lg grid md:grid-cols-2 gap-8 items-center"><div class="text-center border-r-0 md:border-r-2 border-gray-200 pr-0 md:pr-8"><h3 class="text-2xl font-semibold text-gray-800 mb-2">Monitoring</h3><p class="text-gray-600">"Tells you <span class="font-bold text-red-600">whether</span> the system is working."</p><p class="mt-4 text-left">Monitoring involves collecting data on pre-defined metrics and known failure modes. It's about watching dashboards you've already built to see if anything looks wrong.</p></div><div class="text-center"><h3 class="text-2xl font-semibold text-gray-800 mb-2">Observability</h3><p class="text-gray-600">"Tells you <span class="font-bold text-green-600">why</span> the system isn't working."</p><p class="mt-4 text-left">Observability is the ability to ask new questions about your system's behavior without needing to ship new code. It's essential for debugging complex, unknown issues.</p></div></div></section>
+                <section class="mb-12"><h3 class="text-2xl font-semibold mb-6 text-center">The Three Pillars of Observability</h3><div class="grid md:grid-cols-3 gap-8"><div class="info-card bg-white p-6 rounded-xl shadow-md text-center"><h4 class="text-xl font-bold mb-2">📊 Metrics</h4><p class="text-gray-600">Numeric data measured over time (e.g., CPU usage, request count). Ideal for dashboards and alerting on known thresholds.</p></div><div class="info-card bg-white p-6 rounded-xl shadow-md text-center"><h4 class="text-xl font-bold mb-2">📜 Logs</h4><p class="text-gray-600">Immutable, time-stamped records of discrete events. Essential for deep-dive forensic analysis and understanding specific errors.</p></div><div class="info-card bg-white p-6 rounded-xl shadow-md text-center"><h4 class="text-xl font-bold mb-2">↔️ Traces</h4><p class="text-gray-600">Show the end-to-end journey of a request through a distributed system. Crucial for identifying performance bottlenecks.</p></div></div></section>
+                <section class="mb-12">
+                    <h2 class="text-3xl font-semibold text-center mb-8">Understanding Reliability Targets</h2>
+                    <p class="text-gray-600 text-center mb-6 max-w-3xl mx-auto">SRE uses a clear framework to define and manage reliability. Click each concept to understand its role in creating a data-driven approach to system performance.</p>
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div class="space-y-4">
+                            <div class="sre-concept p-4 border-2 border-gray-300 rounded-lg bg-white" data-sre="sli"><h3 class="font-bold text-lg">Indicator (SLI)</h3><p class="text-sm text-gray-500">The Measurement</p></div>
+                            <div class="flex justify-center my-2"><span class="text-2xl text-gray-400">⬇️</span></div>
+                            <div class="sre-concept p-4 border-2 border-gray-300 rounded-lg bg-white" data-sre="slo"><h3 class="font-bold text-lg">Objective (SLO)</h3><p class="text-sm text-gray-500">The Internal Goal</p></div>
+                             <div class="flex justify-center my-2"><span class="text-2xl text-gray-400">⬇️</span></div>
+                            <div class="sre-concept p-4 border-2 border-gray-300 rounded-lg bg-white" data-sre="sla"><h3 class="font-bold text-lg">Agreement (SLA)</h3><p class="text-sm text-gray-500">The External Promise</p></div>
+                        </div>
+                        <div id="sre-details" class="p-6 bg-white rounded-xl shadow-lg min-h-[300px] flex flex-col justify-center"><h4 class="text-xl font-semibold mb-2" id="sre-title">Select a concept</h4><p class="text-gray-700" id="sre-text">Click an item to see its definition and an e-commerce use case.</p></div>
+                    </div>
+                </section>
+                <section class="mb-12">
+                    <h2 class="text-3xl font-semibold text-center mb-8">Reflective Activity</h2>
+                    <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
+                        <div class="accordion-item">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-green-50 hover:bg-green-100 rounded-md">
+                                <span>Activity 2: What are the main challenges with high availability and disaster recovery?</span>
+                                <span class="accordion-icon text-2xl font-light">+</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-gray-600">
+                                <p class="mt-4">Consider the following challenges as you reflect on the question:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li><strong>Cost:</strong> Implementing redundancy and multi-region strategies is expensive. How do you balance the cost against the risk of downtime?</li>
+                                    <li><strong>Complexity:</strong> Managing replicated environments, failover logic, and data synchronization adds significant operational complexity.</li>
+                                    <li><strong>Data Consistency:</strong> How do you ensure data is consistent across multiple active sites, especially during a failover event?</li>
+                                    <li><strong>Testing:</strong> How can you test your disaster recovery plan effectively without disrupting production services? Regular, automated testing is difficult but essential.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h2 class="text-3xl font-semibold text-center mb-8">Google Cloud Customer Care</h2>
+                    <p class="text-gray-600 text-center mb-6 max-w-2xl mx-auto">Effective support is crucial for any cloud journey. Google Cloud provides tiered support offerings to match your organization's needs.</p>
+                    <div class="bg-white p-6 rounded-xl shadow-lg max-w-4xl mx-auto">
+                        <div class="space-y-2">
+                           <div class="accordion-item"><button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-md"><span>Basic Support</span><span class="accordion-icon text-2xl font-light">+</span></button><div class="accordion-content px-4 pb-4 text-gray-600"><p>Free for all customers. Provides access to documentation, community support, and billing support. Ideal for initial exploration.</p></div></div>
+                           <div class="accordion-item"><button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-md"><span>Standard Support</span><span class="accordion-icon text-2xl font-light">+</span></button><div class="accordion-content px-4 pb-4 text-gray-600"><p>Recommended for workloads under development. Provides unlimited access to tech support during business hours to help troubleshoot, test, and explore.</p></div></div>
+                           <div class="accordion-item"><button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-md"><span>Enhanced Support</span><span class="accordion-icon text-2xl font-light">+</span></button><div class="accordion-content px-4 pb-4 text-gray-600"><p>Designed for production workloads with fast response times. Offers 24/7 support and third-party technology integration support.</p></div></div>
+                           <div class="accordion-item"><button class="accordion-header w-full text-left p-4 font-semibold text-lg flex justify-between items-center bg-gray-50 hover:bg-gray-100 rounded-md"><span>Premium Support</span><span class="accordion-icon text-2xl font-light">+</span></button><div class="accordion-content px-4 pb-4 text-gray-600"><p>For mission-critical enterprises. Features the fastest response times, a dedicated Technical Account Manager (TAM), and proactive services like operational health reviews.</p></div></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="sustainability" class="tab-content">
+                <section class="mb-12">
+                     <h2 class="text-3xl font-semibold text-center mb-2">A Commitment to a Sustainable Future</h2>
+                     <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Google is committed to minimizing its environmental impact and empowering everyone—businesses, governments, and individuals—to create a more sustainable world through technology.</p>
+                </section>
+                <section class="mb-12">
+                    <h3 class="text-2xl font-semibold text-center mb-8">Our Environmental Journey</h3>
+                    <div class="max-w-2xl mx-auto">
+                        <div class="relative pl-8 border-l-4 border-blue-200 space-y-12">
+                            <div class="timeline-item"><h4 class="font-bold text-xl text-blue-800">2007: Carbon Neutral</h4><p class="text-gray-700">Google became the first major company to be carbon neutral, offsetting 100% of its emissions through high-quality carbon projects.</p></div>
+                            <div class="timeline-item"><h4 class="font-bold text-xl text-blue-800">2017: 100% Renewable Energy</h4><p class="text-gray-700">Achieved a milestone by matching 100% of its annual global electricity consumption with purchases of renewable energy.</p></div>
+                            <div class="timeline-item"><h4 class="font-bold text-xl text-blue-800">2030: Carbon-Free Goal</h4><p class="text-gray-700">The most ambitious goal yet: to operate all data centers and campuses on 24/7 carbon-free energy, everywhere, by 2030.</p></div>
+                        </div>
+                    </div>
+                </section>
+                 <section>
+                    <h3 class="text-2xl font-semibold text-center mb-8">Leading with Efficient and Certified Operations</h3>
+                    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <div class="info-card bg-white p-6 rounded-xl shadow-md text-center">
+                            <h4 class="text-xl font-bold mb-2">Twice as Efficient</h4>
+                            <p class="text-gray-600">On average, a Google data center is twice as energy efficient as a typical enterprise data center. Running on Google Cloud can be a key part of meeting your own sustainability goals.</p>
+                        </div>
+                        <div class="info-card bg-white p-6 rounded-xl shadow-md text-center">
+                            <h4 class="text-xl font-bold mb-2">ISO 14001 Certified</h4>
+                            <p class="text-gray-600">Google's data centers were the first to achieve this certification, a global standard for environmental management systems focused on improving resource efficiency and reducing waste.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        
+        <section class="mt-16 pt-12 border-t border-gray-200">
+            <h2 class="text-3xl font-semibold text-center mb-8">Knowledge Check</h2>
+            <div id="quiz-container" class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <div id="quiz-question-container">
+                    <p id="question-text" class="text-xl font-semibold mb-6"></p>
+                    <div id="options-container" class="space-y-4"></div>
+                </div>
+                <div id="quiz-feedback" class="mt-6 text-center"></div>
+                <div id="quiz-navigation" class="mt-6 text-center">
+                    <button id="next-question-btn" class="hidden bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">Next Question</button>
+                </div>
+                 <div id="quiz-results" class="hidden text-center">
+                    <h3 class="text-2xl font-bold mb-4">Quiz Complete!</h3>
+                    <p id="score-text" class="text-lg mb-6"></p>
+                    <button id="restart-quiz-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">Restart Quiz</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function switchTab(tabId) {
+        tabContents.forEach(content => {
+            content.classList.remove('active');
+        });
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        document.getElementById(tabId).classList.add('active');
+        tabs.forEach(tab => {
+            if (tab.dataset.tab === tabId) {
+                tab.classList.add('active');
+            }
+        });
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchTab(tab.dataset.tab);
+        });
+    });
+
+    switchTab('finance');
+
+    const hierarchyItems = document.querySelectorAll('.hierarchy-item');
+    const detailsTitle = document.getElementById('details-title');
+    const detailsText = document.getElementById('details-text');
+    const hierarchyData = {
+        'org-node': { title: '🏢 Organization Node', text: 'The root of the hierarchy. Represents your company and is the container for all folders and projects. Policies applied here are inherited by everything below, providing centralized control.' },
+        'folder-node': { title: '📁 Folder', text: 'Groups projects or other folders. Often used to represent departments or teams. Folders allow you to apply specific policies and permissions to entire groups of projects.' },
+        'project-node': { title: '🏗️ Project', text: 'The fundamental organizing entity. All Google Cloud resources (like VMs, databases, storage buckets) are contained within a project. It is the basis for billing, enabling APIs, and managing permissions.' },
+        'resource-node': { title: '📄 Resource', text: 'The lowest level of the hierarchy. These are the actual services you use, such as a Compute Engine virtual machine instance, a Cloud Storage bucket, or a BigQuery table.' }
+    };
+
+    hierarchyItems.forEach(item => {
+        item.addEventListener('click', () => {
+            hierarchyItems.forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            const data = hierarchyData[item.id];
+            detailsTitle.textContent = data.title;
+            detailsText.textContent = data.text;
+        });
+    });
+
+    const sreConcepts = document.querySelectorAll('.sre-concept');
+    const sreTitle = document.getElementById('sre-title');
+    const sreText = document.getElementById('sre-text');
+    const sreData = {
+        sli: { title: 'Indicator (SLI)', text: 'A quantitative measure of system performance. It is a direct measurement, like the percentage of successful requests. Use Case: For an e-commerce site, an SLI could be the percentage of homepage loads that return a success code.' },
+        slo: { title: 'Objective (SLO)', text: 'An internal target for an SLI over a period. It defines what "reliable enough" means for your users and drives engineering priorities. Use Case: An SLO might be "99.95% of homepage loads are successful over a 30-day period." This creates an "error budget" of 0.05% for acceptable downtime/failures.' },
+        sla: { title: 'Agreement (SLA)', text: 'A formal contract with customers that guarantees a certain level of service (based on SLOs) and defines penalties if that level is not met. Use Case: The site promises 99.9% uptime to premium clients in a contract. If uptime drops, clients get a service credit. The SLA is usually less strict than the internal SLO.' }
+    };
+    
+    sreConcepts.forEach(item => {
+        item.addEventListener('click', () => {
+            sreConcepts.forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            const data = sreData[item.dataset.sre];
+            sreTitle.textContent = data.title;
+            sreText.textContent = data.text;
+        });
+    });
+
+    const costSimBtns = document.querySelectorAll('.cost-sim-btn');
+    costSimBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            costSimBtns.forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white');
+                b.classList.add('bg-white', 'text-gray-900');
+            });
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('bg-white', 'text-gray-900');
+            updateCostChart(btn.dataset.plan);
+        });
+    });
+    
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.accordion-icon');
+            const isOpen = content.style.maxHeight && content.style.maxHeight !== "0px";
+            if (isOpen) {
+                content.style.maxHeight = "0px";
+                icon.textContent = '+';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.textContent = '-';
+            }
+        });
+    });
+
+    const costData = {
+        compute: 5000, storage: 1200, data: 3500,
+        support: { basic: 0, standard: 500, enhanced: 2000, premium: 5000 }
+    };
+
+    let costChart;
+    function createCostChart(plan = 'basic') {
+        if (document.getElementById('costChart')) {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            const supportCost = costData.support[plan];
+            costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Compute', 'Storage', 'Data Analytics', 'Support'],
+                    datasets: [{
+                        label: 'Monthly Cost (USD)',
+                        data: [costData.compute, costData.storage, costData.data, supportCost],
+                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+                        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)', 'rgba(245, 158, 11, 1)', 'rgba(239, 68, 68, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c.parsed.y)}` }}
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (v) => '$' + v.toLocaleString() } } }
+                }
+            });
+        }
+    }
+
+    function updateCostChart(plan) {
+        if(costChart) {
+            costChart.data.datasets[0].data[3] = costData.support[plan];
+            costChart.update();
+        }
+    }
+    
+    const quizData = [
+        { question: "Which represents the lowest level in the Google Cloud resource hierarchy?", options: ["Folders", "Projects", "Organization node", "Resources"], answer: "Resources" },
+        { question: "Which feature lets you set limits on the amount of resources that can be used by a project or user?", options: ["Billing reports", "Quota policies", "Budget alerts", "Committed use discounts"], answer: "Quota policies" },
+        { question: "Which tool collects latency data from applications and provides insights into how they’re performing?", options: ["Cloud Profiler", "Cloud Monitoring", "Cloud Trace", "Cloud Logging"], answer: "Cloud Trace" },
+        { question: "Which Customer Care level features the fastest response time and a dedicated Technical Account Manager?", options: ["Standard Support", "Basic Support", "Enhanced Support", "Premium Support"], answer: "Premium Support" },
+        { question: "What is Google's sustainability goal for the year 2030?", options: ["Achieve 100% renewable energy", "Become carbon neutral", "Operate completely carbon-free", "Run its own wind farm"], answer: "Operate completely carbon-free" },
+        { question: "The ISO 14001 certification, first achieved by Google's data centers, is a standard for what?", options: ["Data security", "Carbon footprinting", "Environmental management", "Sustainable procurement"], answer: "Environmental management" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const quizFeedback = document.getElementById('quiz-feedback');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    const quizQuestionContainer = document.getElementById('quiz-question-container');
+    const quizResultsContainer = document.getElementById('quiz-results');
+    const scoreText = document.getElementById('score-text');
+    const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+    function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizQuestionContainer.style.display = 'block';
+        quizResultsContainer.style.display = 'none';
+        nextQuestionBtn.style.display = 'none';
+        showQuestion();
+    }
+    
+    function showQuestion() {
+        quizFeedback.innerHTML = '';
+        const currentQuestion = quizData[currentQuestionIndex];
+        questionText.textContent = `Q${currentQuestionIndex + 1}: ${currentQuestion.question}`;
+        optionsContainer.innerHTML = '';
+        currentQuestion.options.forEach(option => {
+            const button = document.createElement('button');
+            button.textContent = option;
+            button.classList.add('quiz-option', 'w-full', 'text-left', 'p-4', 'border-2', 'rounded-lg', 'bg-gray-100', 'hover:bg-gray-200');
+            button.onclick = (e) => selectAnswer(e.target, currentQuestion.answer);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function selectAnswer(selectedButton, correctAnswer) {
+        const options = optionsContainer.querySelectorAll('.quiz-option');
+        options.forEach(opt => {
+            opt.disabled = true; // Disable all options
+            if (opt.textContent === correctAnswer) {
+                opt.classList.add('correct');
+            }
+        });
+
+        if (selectedButton.textContent === correctAnswer) {
+            score++;
+            selectedButton.classList.add('correct');
+            quizFeedback.innerHTML = '<p class="text-green-600 font-bold">Correct!</p>';
+        } else {
+            selectedButton.classList.add('incorrect');
+            quizFeedback.innerHTML = `<p class="text-red-600 font-bold">Incorrect. The correct answer is: ${correctAnswer}</p>`;
+        }
+        nextQuestionBtn.style.display = 'inline-block';
+    }
+    
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) {
+            showQuestion();
+            nextQuestionBtn.style.display = 'none';
+            quizFeedback.innerHTML = '';
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizQuestionContainer.style.display = 'none';
+        quizFeedback.style.display = 'none';
+        nextQuestionBtn.style.display = 'none';
+        quizResultsContainer.style.display = 'block';
+        scoreText.textContent = `You scored ${score} out of ${quizData.length}!`;
+    }
+
+    nextQuestionBtn.addEventListener('click', nextQuestion);
+    restartQuizBtn.addEventListener('click', startQuiz);
+
+    createCostChart();
+    startQuiz();
+});
+</script>
+</body>
+</html>

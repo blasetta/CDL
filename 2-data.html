@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Data Transformation with Google Cloud</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The SPA is a top-to-bottom narrative journey: "Why" (the data challenge), "What" (data types/architectures), "How" (GCP toolkit), "Process" (Value Chain), "Trust" (Governance), "Apply" (AI Advisor), and now "Reinforce" (Quiz) before a final "Discuss" (Activities) section. This structure guides users from foundational knowledge to practical application and review. -->
+    <!-- Visualization & Content Choices: Data Types -> Goal: Inform -> Viz: Icon-based cards. | GCP Services -> Goal: Compare -> Viz: Tabbed Interface. | AI Advisor -> Goal: Recommend -> Viz: Textarea input + Gemini API output. | Quiz -> Goal: Reinforce -> Viz: Interactive HTML Form -> Interaction: Select answers, submit for score and rationale feedback. This mix of static, interactive, and AI-driven elements provides a layered learning experience. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 2.5rem;
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            color: #475569;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tab-button:not(.active) {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #e5e7eb;
+        }
+        .timeline-item {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 350px;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #4ade80;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #f87171;
+        }
+        .rationale {
+            display: none;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding-left: 1.75rem;
+            color: #475569;
+        }
+        .quiz-option.show-rationale .rationale {
+            display: block;
+        }
+        
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-blue-600">
+                Data Transformation
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#challenge" class="text-slate-600 hover:text-blue-600 font-semibold">The Challenge</a>
+                <a href="#toolkit" class="text-slate-600 hover:text-blue-600 font-semibold">GCP Toolkit</a>
+                <a href="#advisor" class="text-slate-600 hover:text-blue-600 font-semibold">AI Advisor</a>
+                <a href="#quiz" class="text-slate-600 hover:text-blue-600 font-semibold">Quiz</a>
+                <a href="#activities" class="text-slate-600 hover:text-blue-600 font-semibold">Activities</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+        
+        <section id="hero" class="text-center mb-20 md:mb-32">
+            <h1 class="text-4xl md:text-6xl font-bold text-slate-800 mb-4">Exploring Data Transformation</h1>
+            <p class="section-subtitle max-w-3xl mx-auto">An interactive journey into managing, analyzing, and unlocking the value of data with Google Cloud's powerful, AI-enhanced solutions.</p>
+        </section>
+
+        <section id="challenge" class="mb-20 md:mb-32">
+            <div class="text-center mb-12"><h2 class="section-title text-slate-800">The Modern Data Challenge</h2><p class="section-subtitle mt-4 max-w-3xl mx-auto">In a world of explosive data growth, the biggest challenge isn't collecting data, but extracting value from it. Many organizations are leaving powerful insights untapped.</p></div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="text-center p-8">
+                    <div class="chart-container"><canvas id="unstructuredDataChart"></canvas></div>
+                    <p class="mt-4 text-lg text-slate-600 font-medium">An estimated <span class="font-bold text-blue-600">80-90%</span> of all new enterprise data is unstructured, representing a massive, often untapped, source of value.</p>
+                </div>
+                <div class="space-y-8">
+                    <div class="card p-6 flex items-start space-x-4"><span class="text-4xl">🗂️</span><div><h3 class="text-xl font-bold text-slate-800">Structured Data</h3><p class="text-slate-500 mt-1">Highly organized and easily searchable, like data in spreadsheets or SQL databases.</p></div></div>
+                    <div class="card p-6 flex items-start space-x-4"><span class="text-4xl">📦</span><div><h3 class="text-xl font-bold text-slate-800">Unstructured Data</h3><p class="text-slate-500 mt-1">Information without a predefined model, like text, images, and videos.</p></div></div>
+                    <div class="card p-6 flex items-start space-x-4"><span class="text-4xl">🖇️</span><div><h3 class="text-xl font-bold text-slate-800">Semi-structured Data</h3><p class="text-slate-500 mt-1">A mix of both, containing tags or markers to enforce a hierarchy, like JSON or XML.</p></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="toolkit" class="mb-20 md:mb-32">
+            <div class="text-center mb-12"><h2 class="section-title text-slate-800">Google Cloud's Data Toolkit</h2><p class="section-subtitle mt-4 max-w-3xl mx-auto">Google Cloud provides a comprehensive suite of managed services to handle any data workload, at any scale. Explore the tools to find the right fit for your needs.</p></div>
+            <div id="tabs" class="w-full max-w-6xl mx-auto">
+                <div class="flex flex-wrap justify-center gap-2 mb-8">
+                    <button class="tab-button active" data-tab="cloud-sql">🗄️ Cloud SQL</button>
+                    <button class="tab-button" data-tab="spanner">🌐 Spanner</button>
+                    <button class="tab-button" data-tab="alloydb">🚀 AlloyDB</button>
+                    <button class="tab-button" data-tab="firestore">🔥 Firestore</button>
+                    <button class="tab-button" data-tab="bigtable">📊 Bigtable</button>
+                    <button class="tab-button" data-tab="bigquery">🔍 BigQuery</button>
+                </div>
+                <div class="card p-8 md:p-12 min-h-[400px]">
+                    <div id="cloud-sql" class="tab-content active"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">🗄️ Cloud SQL</h3><p class="text-lg text-slate-600 mb-6">A fully managed service for MySQL, PostgreSQL, and SQL Server. Perfect for general-purpose applications needing a traditional relational database with regional scope.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">High Availability:</strong> Uses a standby instance for automatic failover.</div><div><strong class="text-slate-800">Read Scalability:</strong> Offloads read queries to read replicas.</div><div><strong class="text-slate-800">Best For:</strong> Web apps, CRMs, e-commerce.</div><div><strong class="text-slate-800">Scale Model:</strong> Vertical (scale-up).</div></div></div>
+                    <div id="spanner" class="tab-content"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">🌐 Spanner</h3><p class="text-lg text-slate-600 mb-6">A mission-critical, globally distributed database combining relational structure with non-relational horizontal scale.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">Global Scale:</strong> Horizontally scales across multiple regions.</div><div><strong class="text-slate-800">Strong Consistency:</strong> Guarantees all users worldwide see the same data.</div><div><strong class="text-slate-800">Best For:</strong> Finance, global supply chains, large-scale gaming.</div><div><strong class="text-slate-800">Scale Model:</strong> Horizontal (scale-out).</div></div></div>
+                    <div id="alloydb" class="tab-content"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">🚀 AlloyDB</h3><p class="text-lg text-slate-600 mb-6">A fully managed, PostgreSQL-compatible database optimized for the most demanding enterprise workloads.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">Extreme Performance:</strong> Significantly faster than standard PostgreSQL.</div><div><strong class="text-slate-800">AI-Powered:</strong> Supports vector embeddings for powerful similarity searches.</div><div><strong class="text-slate-800">Best For:</strong> High-throughput systems, recommendation engines, AI search.</div><div><strong class="text-slate-800">Compatibility:</strong> Fully PostgreSQL compatible.</div></div></div>
+                    <div id="firestore" class="tab-content"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">🔥 Firestore</h3><p class="text-lg text-slate-600 mb-6">A flexible, scalable NoSQL document database that keeps your data in-sync across all clients in real-time.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">Real-time Sync:</strong> Pushes data changes automatically.</div><div><strong class="text-slate-800">Offline Support:</strong> Apps remain responsive without connectivity.</div><div><strong class="text-slate-800">Best For:</strong> Live chat, collaborative tools, mobile leaderboards.</div><div><strong class="text-slate-800">Limitation:</strong> Not for complex analytics.</div></div></div>
+                    <div id="bigtable" class="tab-content"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">📊 Bigtable</h3><p class="text-lg text-slate-600 mb-6">Google's original NoSQL wide-column store database, built for massive analytical and operational workloads with very low latency.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">Extreme Throughput:</strong> Handles millions of reads/writes per second.</div><div><strong class="text-slate-800">HBase Compatible:</strong> Shares its data model with open-source HBase.</div><div><strong class="text-slate-800">Best For:</strong> IoT time-series, financial market data, user analytics.</div><div><strong class="text-slate-800">Data Model:</strong> Wide-column store.</div></div></div>
+                    <div id="bigquery" class="tab-content"><h3 class="text-2xl font-bold text-blue-600 mb-3 flex items-center">🔍 BigQuery</h3><p class="text-lg text-slate-600 mb-6">The serverless, petabyte-scale data warehouse at the heart of Google's data platform. Analyze massive datasets using SQL without managing any infrastructure.</p><div class="grid md:grid-cols-2 gap-6 text-slate-600"><div><strong class="text-slate-800">Serverless:</strong> No infrastructure to manage.</div><div><strong class="text-slate-800">Separation of Compute & Storage:</strong> Scales elastically for speed and cost-efficiency.</div><div><strong class="text-slate-800">Built-in AI/ML:</strong> Create ML models directly with SQL.</div><div><strong class="text-slate-800">Best For:</strong> Central analytics, BI, and large-scale ML.</div></div></div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="advisor" class="mb-20 md:mb-32">
+            <div class="text-center mb-12"><h2 class="section-title text-slate-800">✨ AI Data Solution Advisor</h2><p class="section-subtitle mt-4 max-w-3xl mx-auto">Describe your data challenge below. Our AI advisor will analyze your needs and recommend the best Google Cloud service to get started.</p></div>
+            <div class="max-w-3xl mx-auto card p-8">
+                 <textarea id="scenario-input" rows="4" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="e.g., I'm building a global e-commerce app that needs to handle millions of transactions with strong consistency, and I also need to run analytics on sales data."></textarea>
+                 <button id="advisor-btn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Get Recommendation</button>
+                 <div id="advisor-output-container" class="mt-6">
+                    <div id="advisor-output" class="p-6 bg-slate-50 rounded-lg min-h-[150px] whitespace-pre-wrap">Your recommendation will appear here...</div>
+                 </div>
+            </div>
+        </section>
+        
+        <section id="quiz" class="mb-20 md:mb-32">
+            <div class="text-center mb-12">
+                <h2 class="section-title text-slate-800">📝 Knowledge Check</h2>
+                <p class="section-subtitle mt-4 max-w-3xl mx-auto">Test your understanding of the key data transformation concepts.</p>
+            </div>
+            <div id="quiz-container" class="mt-12 max-w-2xl mx-auto"></div>
+            <div class="mt-8 text-center">
+                <button id="submit-quiz-btn" class="bg-blue-600 text-white font-medium py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Submit Answers</button>
+            </div>
+            <div id="quiz-results" class="mt-8 max-w-2xl mx-auto text-center"></div>
+        </section>
+
+        <section id="activities">
+            <div class="text-center mb-12"><h2 class="section-title text-slate-800">Final Activities & Discussion</h2><p class="section-subtitle mt-4 max-w-3xl mx-auto">Apply what you've learned. These activities are designed to spark creative thinking and strategic planning about data transformation.</p></div>
+            <div class="max-w-4xl mx-auto space-y-8">
+                <div class="card p-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Activity 1: Unlocking Unstructured Data</h3>
+                    <p class="text-slate-600 mb-4">The report highlights that 80-90% of enterprise data is unstructured. Beyond sentiment analysis of social media, can you imagine and describe other innovative ways to exploit this vast resource? Think about audio from customer service calls, images from security cameras, or text from maintenance logs.</p>
+                    <button class="ai-activity-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors" data-prompt-id="unstructured">✨ Get AI Perspective</button>
+                    <div class="ai-activity-output mt-4 p-4 bg-slate-50 rounded-lg whitespace-pre-wrap hidden"></div>
+                </div>
+                 <div class="card p-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Activity 2: Modernizing Your Data Architecture</h3>
+                    <p class="text-slate-600 mb-4">Imagine you are tasked with transforming the data management solution for your company's most critical application. Describe its current (or imagined) architecture and then outline a modernization plan. Which Google Cloud services from the toolkit would you use and why?</p>
+                    <button class="ai-activity-btn bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors" data-prompt-id="modernize">✨ Get AI Perspective</button>
+                    <div class="ai-activity-output mt-4 p-4 bg-slate-50 rounded-lg whitespace-pre-wrap hidden"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800 text-slate-300 mt-20 md:mt-32">
+        <div class="container mx-auto px-6 py-8 text-center"><p>&copy; 2024 Interactive Data Report. All rights reserved.</p><p class="text-sm text-slate-400 mt-2">Conceptual application based on "Exploring Data Transformation with Google Cloud". AI features powered by Gemini.</p></div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    tabContents.forEach(content => content.id === tabId ? content.classList.add('active') : content.classList.remove('active'));
+                });
+            });
+
+            const ctx = document.getElementById('unstructuredDataChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut', data: { labels: ['Unstructured Data', 'Structured & Semi-Structured'], datasets: [{ data: [85, 15], backgroundColor: ['#3b82f6', '#e5e7eb'], borderColor: ['#3b82f6', '#e5e7eb'], borderWidth: 1 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'The Composition of New Enterprise Data', font: { size: 16 } } }, cutout: '60%' }
+            });
+
+            const advisorBtn = document.getElementById('advisor-btn');
+            const scenarioInput = document.getElementById('scenario-input');
+            advisorBtn.addEventListener('click', async () => {
+                const scenario = scenarioInput.value;
+                const advisorOutputContainer = document.getElementById('advisor-output-container');
+                if (!scenario.trim()) {
+                    advisorOutputContainer.innerHTML = `<div id="advisor-output" class="p-6 bg-slate-50 rounded-lg min-h-[150px] whitespace-pre-wrap">Please describe your data challenge in the text box.</div>`;
+                    return;
+                }
+                const prompt = `Act as a Google Cloud solutions architect. Based on the following user scenario, recommend a primary data storage or warehousing solution from the Google Cloud toolkit (Cloud SQL, Spanner, AlloyDB, Firestore, Bigtable, BigQuery). Explain your reasoning in a few paragraphs, covering why the chosen service's data model, scale, and features are a good fit for the workload described. Scenario: "${scenario}"`;
+                advisorOutputContainer.innerHTML = '<div class="loader"></div>';
+                try {
+                    const responseText = await callGemini(prompt);
+                    advisorOutputContainer.innerHTML = `<div id="advisor-output" class="p-6 bg-slate-50 rounded-lg min-h-[150px] whitespace-pre-wrap">${responseText.replace(/\n/g, '<br>')}</div>`;
+                } catch (error) {
+                    advisorOutputContainer.innerHTML = `<div id="advisor-output" class="p-6 bg-red-100 text-red-800 rounded-lg">Sorry, an error occurred. Please try again.</div>`;
+                    console.error('Error:', error);
+                }
+            });
+
+            document.querySelectorAll('.ai-activity-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const activityPrompts = {
+                        unstructured: "Provide three innovative, real-world business use cases for exploiting unstructured data, beyond simple social media sentiment analysis. For each, describe the type of unstructured data (e.g., audio, images, text logs) and the specific business value or competitive advantage gained. Format as a numbered list with bold headings.",
+                        modernize: "Create a concise, hypothetical data architecture modernization plan for a legacy retail e-commerce application. First, describe a typical legacy architecture (e.g., on-premises monolithic SQL database). Second, propose a modern Google Cloud architecture, recommending specific services for transactional data, analytics, and product catalog. Briefly justify each choice."
+                    };
+                    const promptId = e.target.dataset.promptId;
+                    const prompt = activityPrompts[promptId];
+                    const outputDiv = e.target.nextElementSibling;
+                    outputDiv.classList.remove('hidden');
+                    outputDiv.innerHTML = '<div class="loader"></div>';
+                    try {
+                        const responseText = await callGemini(prompt);
+                        outputDiv.innerHTML = responseText.replace(/\n/g, '<br>');
+                    } catch (error) {
+                        outputDiv.innerHTML = '<p class="text-red-600">Sorry, an error occurred while generating the perspective.</p>';
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            // Quiz Logic
+            const quizContainer = document.getElementById('quiz-container');
+            const submitQuizBtn = document.getElementById('submit-quiz-btn');
+            const quizResults = document.getElementById('quiz-results');
+            const quizData = { "questions": [ { "question": "A global retail company wants to migrate its on-premises e-commerce platform to the cloud. They need a database that can handle millions of transactions from users worldwide with strong, immediate consistency to avoid inventory errors. Which Google Cloud service is best suited for this requirement?", "answerOptions": [ { "text": "Cloud SQL", "rationale": "Cloud SQL is excellent for regional applications but is not designed for the horizontal, global scale and strong consistency required by this use case.", "isCorrect": false }, { "text": "Cloud Spanner", "rationale": "Cloud Spanner provides unlimited horizontal scaling with strong global consistency, making it the ideal choice for mission-critical, global transactional applications.", "isCorrect": true }, { "text": "BigQuery", "rationale": "BigQuery is a data warehouse optimized for analytics and running complex queries, not for processing a high volume of individual transactions (OLTP).", "isCorrect": false }, { "text": "Bigtable", "rationale": "Bigtable is a NoSQL database built for high-throughput analytical and operational workloads, but it doesn't provide the SQL interface and strong transactional consistency of a relational database like Spanner.", "isCorrect": false } ] }, { "question": "In the Shared Responsibility Model, what is the customer *always* responsible for, regardless of the service model (IaaS, PaaS, or SaaS)?", "answerOptions": [ { "text": "Managing the physical security of the data center.", "rationale": "The cloud provider is always responsible for the security *OF* the cloud, which includes the physical infrastructure.", "isCorrect": false }, { "text": "Applying patches to the underlying operating system.", "rationale": "This responsibility shifts. In IaaS, the customer manages the OS, but in PaaS and SaaS, the provider manages it.", "isCorrect": false }, { "text": "Configuring access policies and securing their own data.", "rationale": "The customer controls who has access to their data and is ultimately responsible for its security configuration and content.", "isCorrect": true }, { "text": "Managing the networking hardware.", "rationale": "Networking hardware is part of the foundational infrastructure that the cloud provider is responsible for securing.", "isCorrect": false } ] }, { "question": "A development team wants to build and deploy a web application quickly without managing the underlying servers, operating systems, or runtime environments. They want to focus only on writing their application code. Which cloud service model best fits their needs?", "answerOptions": [ { "text": "Infrastructure as a Service (IaaS)", "rationale": "IaaS provides the raw infrastructure (like VMs), but the team would still need to manage the operating systems and runtime environments.", "isCorrect": false }, { "text": "Software as a Service (SaaS)", "rationale": "SaaS provides a ready-to-use application (like Gmail). The team wants to build their own application, not just use an existing one.", "isCorrect": false }, { "text": "Platform as a Service (PaaS)", "rationale": "PaaS provides the platform—including infrastructure, OS, and runtime—allowing developers to focus solely on building and deploying their application code.", "isCorrect": true }, { "text": "On-premises", "rationale": "An on-premises model would require the team to manage the entire stack, from physical servers to the application itself, which is the opposite of their goal.", "isCorrect": false } ] }, { "question": "A marketing team wants to analyze audio recordings from customer service calls to identify common product complaints and customer sentiment. What type of data are they primarily working with?", "answerOptions": [ { "text": "Structured Data", "rationale": "Structured data has a predefined format, like a spreadsheet. Audio files do not have this inherent structure.", "isCorrect": false }, { "text": "Semi-structured Data", "rationale": "Semi-structured data has some organizational properties, like tags in an XML file. Raw audio does not have this level of organization.", "isCorrect": false }, { "text": "Relational Data", "rationale": "Relational data is a type of structured data stored in tables with defined relationships, which doesn't describe audio recordings.", "isCorrect": false }, { "text": "Unstructured Data", "rationale": "Audio files, like images and text documents, lack a predefined data model and are classic examples of unstructured data.", "isCorrect": true } ] }, { "question": "An organization is building a central repository to store petabytes of raw, unprocessed data from various sources, including IoT sensor logs, social media feeds, and application logs. Data scientists will use this repository for exploration and to train new machine learning models. What is this type of repository called?", "answerOptions": [ { "text": "Data Warehouse", "rationale": "A data warehouse typically stores processed and structured data for specific business intelligence and reporting tasks, not raw, multi-format data for exploration.", "isCorrect": false }, { "text": "Relational Database", "rationale": "A relational database is designed for structured data and would not be able to handle the variety and volume of raw, unstructured data described.", "isCorrect": false }, { "text": "Data Lake", "rationale": "A data lake is specifically designed to be a central repository for vast quantities of raw data in any format, making it ideal for data science and ML experimentation.", "isCorrect": true }, { "text": "Private Cloud", "rationale": "A private cloud is an infrastructure deployment model, not a specific type of data repository architecture.", "isCorrect": false } ] }, { "question": "What is the primary architectural principle behind BigQuery that allows it to analyze petabytes of data so quickly and cost-effectively?", "answerOptions": [ { "text": "It runs on specialized, custom hardware.", "rationale": "While Google's hardware is efficient, the key architectural advantage is in its software design, not just the hardware itself.", "isCorrect": false }, { "text": "The separation of storage and compute.", "rationale": "By decoupling storage (Colossus) from compute (Dremel), BigQuery can bring massive, parallel processing power to the data, allowing for independent and elastic scaling.", "isCorrect": true }, { "text": "It only works with highly structured data.", "rationale": "BigQuery can handle semi-structured and nested data, not just rigidly structured data, so this is not its primary architectural advantage.", "isCorrect": false }, { "text": "It caches all data in memory.", "rationale": "Caching petabytes of data in memory would be prohibitively expensive; its performance comes from its distributed query engine and scalable architecture.", "isCorrect": false } ] }, { "question": "A hospital needs to allow researchers to analyze patient outcome data, but must comply with HIPAA regulations by ensuring no personally identifiable information (PII) is exposed. The process of establishing rules to mask PII for researchers while allowing doctors full access is an example of what?", "answerOptions": [ { "text": "Data Migration", "rationale": "Data migration is the process of moving data from one system to another, not setting access rules.", "isCorrect": false }, { "text": "Data Genesis", "rationale": "Data genesis refers to the creation of data, not the policies that govern its use.", "isCorrect": false }, { "text": "Streaming Analytics", "rationale": "Streaming analytics is about processing data in real-time, which is different from defining access policies.", "isCorrect": false }, { "text": "Data Governance", "rationale": "Data governance is the framework of policies and controls that dictate how data is managed, accessed, and protected to ensure compliance and proper usage.", "isCorrect": true } ] }, { "question": "Which of the following best describes a 'hybrid cloud' strategy?", "answerOptions": [ { "text": "Using only on-premises servers that are virtualized.", "rationale": "This describes a private cloud, which is a component of a hybrid strategy but not the full picture.", "isCorrect": false }, { "text": "Using services from two or more different public cloud providers.", "rationale": "This describes a multicloud strategy, which can be combined with hybrid but is a distinct concept.", "isCorrect": false }, { "text": "Connecting an organization's on-premises data center with a public cloud provider.", "rationale": "A hybrid cloud integrates an organization's private infrastructure (like an on-premises data center) with public cloud services.", "isCorrect": true }, { "text": "Migrating all applications and data to a single public cloud provider.", "rationale": "This describes a full cloud adoption strategy, not a hybrid one.", "isCorrect": false } ] }, { "question": "In the data value chain, which step involves cleaning, merging, and transforming raw data into a format that is ready for analysis?", "answerOptions": [ { "text": "Data Collection", "rationale": "Data collection, or ingestion, is the step where data is brought into the system, before it gets transformed.", "isCorrect": false }, { "text": "Data Storage", "rationale": "Data storage is where the data resides after it has been processed and is awaiting analysis.", "isCorrect": false }, { "text": "Data Processing", "rationale": "Data processing specifically refers to the transformation (ETL - Extract, Transform, Load) phase where data is made usable for analysis.", "isCorrect": true }, { "text": "Data Activation", "rationale": "Data activation is the final step, where the insight derived from analysis is used to drive a business action.", "isCorrect": false } ] }, { "question": "Which pillar of Google's Transformation Cloud focuses on enabling secure, hybrid work and fostering innovation through tools like Google Workspace?", "answerOptions": [ { "text": "Data Cloud", "rationale": "The Data Cloud pillar focuses on unifying and analyzing data, not directly on user productivity tools.", "isCorrect": false }, { "text": "Collaboration Cloud", "rationale": "The Collaboration Cloud pillar is designed to transform how people connect, create, and collaborate, with Google Workspace as its core.", "isCorrect": true }, { "text": "Trusted Cloud", "rationale": "The Trusted Cloud pillar is focused on providing advanced security tools to protect data and infrastructure.", "isCorrect": false }, { "text": "Open Infrastructure", "rationale": "The Open Infrastructure pillar is about providing flexibility and avoiding vendor lock-in through open-source based services.", "isCorrect": false } ] } ] };
+
+            function renderQuiz() {
+                quizContainer.innerHTML = '';
+                quizResults.innerHTML = '';
+                submitQuizBtn.textContent = 'Submit Answers';
+                submitQuizBtn.onclick = checkAnswers;
+
+                quizData.questions.forEach((q, index) => {
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'mb-6 bg-white p-6 rounded-lg shadow-sm';
+                    let optionsHTML = '';
+                    const shuffledOptions = [...q.answerOptions].sort(() => Math.random() - 0.5);
+
+                    shuffledOptions.forEach(option => {
+                        optionsHTML += `<label class="quiz-option flex items-start p-3 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer"><input type="radio" name="question${index}" value="${option.text}" class="mr-3 mt-1 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500 flex-shrink-0"><span class="option-text">${option.text}</span><p class="rationale">${option.rationale}</p></label>`;
+                    });
+
+                    questionElement.innerHTML = `<p class="font-semibold text-slate-800 mb-4">${index + 1}. ${q.question}</p><div class="space-y-2" data-qindex="${index}">${optionsHTML}</div>`;
+                    quizContainer.appendChild(questionElement);
+                });
+            }
+
+            function checkAnswers() {
+                let score = 0;
+                quizData.questions.forEach((q, index) => {
+                    const selectedOptionInput = document.querySelector(`input[name="question${index}"]:checked`);
+                    const questionBlock = document.querySelector(`div[data-qindex="${index}"]`);
+                    
+                    questionBlock.querySelectorAll('.quiz-option').forEach(label => {
+                        const input = label.querySelector('input');
+                        const optionData = q.answerOptions.find(opt => opt.text === input.value);
+                        
+                        if (optionData.isCorrect) {
+                            label.classList.add('correct');
+                        }
+                        const rationaleElement = label.querySelector('.rationale');
+                        rationaleElement.textContent = optionData.rationale;
+                        label.classList.add('show-rationale');
+                    });
+
+                    if (selectedOptionInput) {
+                        const selectedOptionData = q.answerOptions.find(opt => opt.text === selectedOptionInput.value);
+                        if (selectedOptionData.isCorrect) {
+                            score++;
+                        } else {
+                            selectedOptionInput.parentElement.classList.add('incorrect');
+                        }
+                    }
+                });
+                
+                quizResults.innerHTML = `<h3 class="text-2xl font-bold text-slate-900">Your Score: ${score} out of ${quizData.questions.length}</h3>`;
+                submitQuizBtn.textContent = "Try Again";
+                submitQuizBtn.onclick = renderQuiz;
+            }
+            
+            submitQuizBtn.onclick = checkAnswers;
+            
+            renderQuiz();
+
+            async function callGemini(prompt) {
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Unexpected response structure from API.');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

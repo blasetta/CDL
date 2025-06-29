@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Digital Transformation with Google Cloud</title>
+    <!-- Chosen Palette: "Calm Neutral with Google Blue Accent" -->
+    <!-- Application Structure Plan: The SPA is designed as a narrative journey through digital transformation. It uses a top navigation bar for quick access and thematic sections to guide the user: from the 'Why' (Paradigm Shift), to the 'What' (Cloud & Service Models), the 'How' (Shared Responsibility), a practical 'Advisor' section, a 'Quiz' to reinforce learning, and finally an 'Activities' section for discussion prompts. This structure prioritizes understanding by breaking down complex topics into interactive, digestible modules. -->
+    <!-- Visualization & Content Choices: 1. Cloud Adoption Stats: Goal=Compare. Viz=Chart.js Donut Chart. 2. IT Infrastructure Models: Goal=Organize/Compare. Viz=Interactive HTML cards. 3. Shared Responsibility: Goal=Compare/Inform. Viz=Interactive HTML/JS diagram. 4. Service Models: Goal=Organize/Compare. Viz=Tabs + Gemini-powered use case generator. 5. Cloud Strategy Advisor: Goal=Synthesize/Recommend. Viz=Text input + Gemini API output. 6. Knowledge Quiz: Goal=Reinforce. Viz=Interactive HTML form. 7. Activities: Goal=Discuss. Viz=Static text section. Justification=The structure provides a complete learning path, from foundational knowledge to application and discussion. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .responsibility-item.customer {
+            background-color: #e0f2fe; /* sky-100 */
+            border-left: 4px solid #0ea5e9; /* sky-500 */
+        }
+        .responsibility-item.google {
+            background-color: #fef9c3; /* yellow-100 */
+            border-left: 4px solid #facc15; /* yellow-400 */
+        }
+        .nav-link {
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #2563eb; /* blue-600 */
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7; /* green-100 */
+        }
+        .quiz-option.incorrect {
+             background-color: #fee2e2; /* red-100 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-slate-800">Digital Transformation</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Introduction</a>
+                        <a href="#landscape" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Landscape</a>
+                        <a href="#services" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Service Models</a>
+                        <a href="#responsibility" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Responsibility</a>
+                        <a href="#advisor" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Advisor</a>
+                        <a href="#quiz" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Quiz</a>
+                        <a href="#activities" class="nav-link text-slate-600 px-3 py-2 rounded-md text-sm font-medium">Activities</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Section 1: Introduction -->
+        <section id="introduction" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">A New Paradigm: <span class="text-blue-600">Digital Transformation</span></h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-600">
+                    Just as the printing press and the computer revolutionized their eras, today we are in a paradigm shift driven by data and cloud infrastructure. Digital transformation is the fundamental change in how organizations operate and deliver value by adopting new digital technologies. This report explores the core concepts of this transformation and the role of Google Cloud.
+                </p>
+            </div>
+        </section>
+
+        <!-- Section 2: The Landscape -->
+        <section id="landscape" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Understanding the IT Landscape</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
+                        The journey to the cloud involves understanding different infrastructure models. Each offers a unique balance of control, flexibility, and management. The modern strategy is not about choosing one, but combining them effectively.
+                    </p>
+                </div>
+
+                <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="bg-slate-50 rounded-lg p-6"><h3 class="font-semibold text-lg text-slate-800">On-Premises</h3><p class="mt-2 text-sm text-slate-600">Hardware and software are hosted on-site in an organization's own data center. Provides maximum physical control but is costly and difficult to scale.</p></div>
+                    <div class="bg-slate-50 rounded-lg p-6"><h3 class="font-semibold text-lg text-slate-800">Private Cloud</h3><p class="mt-2 text-sm text-slate-600">Cloud infrastructure dedicated to a single organization. Offers the benefits of public cloud with more control, often for regulatory reasons.</p></div>
+                    <div class="bg-slate-50 rounded-lg p-6"><h3 class="font-semibold text-lg text-slate-800">Public Cloud</h3><p class="mt-2 text-sm text-slate-600">On-demand services from providers like Google Cloud, shared across multiple tenants. Offers a pay-as-you-go model with immense scalability.</p></div>
+                    <div class="bg-slate-50 rounded-lg p-6 lg:col-span-1.5"><h3 class="font-semibold text-lg text-slate-800">Hybrid Cloud</h3><p class="mt-2 text-sm text-slate-600">Combines a private cloud (or on-premises) with a public cloud, allowing data and apps to be shared between them for greater flexibility.</p></div>
+                    <div class="bg-slate-50 rounded-lg p-6 lg:col-span-1.5"><h3 class="font-semibold text-lg text-slate-800">Multicloud</h3><p class="mt-2 text-sm text-slate-600">An architecture that combines services from at least two public cloud providers to leverage unique strengths and avoid vendor lock-in.</p></div>
+                </div>
+                
+                <div class="mt-16 md:grid md:grid-cols-2 md:gap-12 items-center">
+                    <div class="chart-container"><canvas id="adoptionChart"></canvas></div>
+                    <div class="mt-8 md:mt-0">
+                        <h3 class="text-2xl font-bold text-slate-800">The Modern Approach is Hybrid & Multicloud</h3>
+                        <p class="mt-4 text-slate-600">According to the Flexera 2022 State of the Cloud Report, organizations overwhelmingly embrace a combined strategy. This approach allows them to balance security, cost, innovation, and legacy system requirements. It's the de facto standard for modern enterprise architecture.</p>
+                        <div class="mt-6 flex space-x-8">
+                             <div><p class="text-4xl font-bold text-blue-600">89%</p><p class="text-sm font-medium text-slate-500">Have a Multicloud Strategy</p></div>
+                            <div><p class="text-4xl font-bold text-teal-600">80%</p><p class="text-sm font-medium text-slate-500">Have a Hybrid Strategy</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Service Models -->
+        <section id="services" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">Choosing Your Cloud Service Model</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">The "as a Service" models determine how much you manage versus how much the cloud provider manages. The right choice depends on your needs for control, flexibility, and convenience.</p>
+                </div>
+
+                <div class="mt-12">
+                    <div class="flex justify-center border-b border-slate-300"><button data-tab="iaas" class="service-tab px-6 py-3 font-medium text-blue-600 border-b-2 border-blue-600">IaaS</button><button data-tab="paas" class="service-tab px-6 py-3 font-medium text-slate-500">PaaS</button><button data-tab="saas" class="service-tab px-6 py-3 font-medium text-slate-500">SaaS</button></div>
+                    <div id="service-content" class="mt-8">
+                        <div id="iaas-content" class="service-panel grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Infrastructure as a Service (IaaS)</h3><p class="mt-2 text-slate-600">Provides fundamental resources like virtual machines, storage, and networking. You lease the hardware, giving you maximum control over the operating system and software.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Leasing a car. You choose the car and drive it, but you don't own it. You are responsible for maintaining it.</p></div><div class="text-center"><span class="text-8xl">🚗</span></div></div>
+                        <div id="paas-content" class="service-panel hidden grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Platform as a Service (PaaS)</h3><p class="mt-2 text-slate-600">Offers a complete development and deployment environment. You manage your application and data, while the provider manages the underlying infrastructure.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Taking a taxi. You provide the destination (your code), but you don't do the driving or maintain the vehicle.</p></div><div class="text-center"><span class="text-8xl">🚕</span></div></div>
+                        <div id="saas-content" class="service-panel hidden grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Software as a Service (SaaS)</h3><p class="mt-2 text-slate-600">Delivers a complete, ready-to-use application over the web. The provider manages everything; you simply use the software.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Taking a bus. You share a ride that follows a predefined route. It's convenient but offers the least customization.</p></div><div class="text-center"><span class="text-8xl">🚌</span></div></div>
+                        <div class="mt-8 text-center"><button id="use-case-btn" class="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">✨ Generate Use Cases</button></div>
+                        <div id="use-case-output" class="mt-6 p-6 bg-slate-100 rounded-lg min-h-[100px] whitespace-pre-wrap"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Shared Responsibility -->
+        <section id="responsibility" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">The Shared Responsibility Model</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Security in the cloud is a partnership. Understanding who is responsible for what is critical. While Google secures the cloud's foundation, you are always responsible for securing your data and access within it.</p>
+                </div>
+
+                <div class="mt-12 lg:grid lg:grid-cols-3 lg:gap-8 items-start">
+                    <div class="lg:col-span-1">
+                         <p class="text-slate-600 mb-4">Select a service model to see how responsibilities are divided between you (the customer) and Google Cloud.</p>
+                        <div class="flex flex-col space-y-2"><button data-model="iaas" class="resp-btn w-full text-left p-3 rounded-md bg-blue-500 text-white font-semibold">IaaS</button><button data-model="paas" class="resp-btn w-full text-left p-3 rounded-md bg-slate-200 text-slate-700 font-semibold">PaaS</button><button data-model="saas" class="resp-btn w-full text-left p-3 rounded-md bg-slate-200 text-slate-700 font-semibold">SaaS</button></div>
+                         <div class="mt-6 flex items-start space-x-3"><div class="w-4 h-4 mt-1 rounded-sm bg-sky-500 flex-shrink-0"></div><p class="text-sm text-slate-600">Customer Responsibility</p></div>
+                         <div class="mt-2 flex items-start space-x-3"><div class="w-4 h-4 mt-1 rounded-sm bg-yellow-400 flex-shrink-0"></div><p class="text-sm text-slate-600">Google Cloud Responsibility</p></div>
+                    </div>
+
+                    <div id="responsibility-diagram" class="mt-8 lg:mt-0 lg:col-span-2 space-y-2">
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Content & Data</h4><p class="text-sm text-slate-600">Your data, code, and content.</p></div>
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Access & Policies</h4><p class="text-sm text-slate-600">Identity management, user permissions, and network access controls.</p></div>
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Application & Deployment</h4><p class="text-sm text-slate-600">Your application code, web app security, and how it is deployed.</p></div>
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Operating System & Network</h4><p class="text-sm text-slate-600">The guest OS, network configuration, and firewall rules.</p></div>
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Virtualization & Storage</h4><p class="text-sm text-slate-600">The core virtualization layer, encrypted storage, and kernel.</p></div>
+                        <div class="responsibility-item p-4 rounded-md transition-all duration-300"><h4 class="font-bold text-slate-800">Hardware & Physical Security</h4><p class="text-sm text-slate-600">The servers, networking hardware, and physical security of the data centers.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Cloud Strategy Advisor -->
+        <section id="advisor" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">✨ Cloud Strategy Advisor</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Describe your business or project scenario below, and our AI advisor will recommend a suitable cloud strategy based on the concepts in this report.</p>
+                </div>
+                <div class="mt-12 max-w-2xl mx-auto">
+                    <textarea id="scenario-input" rows="4" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="e.g., We are a healthcare startup building a patient portal. We need high security, HIPAA compliance, and the ability to scale quickly during enrollment periods."></textarea>
+                    <button id="advisor-btn" class="mt-4 w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Get Recommendation</button>
+                    <div id="advisor-output" class="mt-6 p-6 bg-white rounded-lg shadow-sm min-h-[150px] whitespace-pre-wrap"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Quiz -->
+        <section id="quiz" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">📝 Knowledge Check</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Test your understanding of the key digital transformation concepts.</p>
+                </div>
+                <div id="quiz-container" class="mt-12 max-w-2xl mx-auto">
+                </div>
+                <div class="mt-8 text-center">
+                    <button id="submit-quiz-btn" class="bg-blue-600 text-white font-medium py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors">Submit Answers</button>
+                </div>
+                <div id="quiz-results" class="mt-8 max-w-2xl mx-auto text-center"></div>
+            </div>
+        </section>
+
+        <!-- Section 7: Activities -->
+        <section id="activities" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">🤔 Discussion Activities</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Reflect on the concepts presented and discuss the following topics.</p>
+                </div>
+                <div class="mt-12 max-w-3xl mx-auto space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-slate-800">Activity 1: The Pace of Change</h3>
+                        <p class="mt-2 text-slate-600">Discuss a product or technology that no longer exists due to innovation (e.g., floppy disks, pagers). Then, brainstorm a product or technology that we use today that might no longer exist in the near future. Why?</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-slate-800">Activity 2: The AI & Cloud Connection</h3>
+                        <p class="mt-2 text-slate-600">Why and how are Cloud Computing and ML/AI so deeply interconnected? Consider the data, computational power, and scalability required for modern AI. How does the cloud enable the current AI revolution?</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-lg text-slate-800">Activity 3: The OpEx Model</h3>
+                        <p class="mt-2 text-slate-600">The shift to an Operating Expense (OpEx) model is a key benefit of the cloud, offering flexibility and reducing large upfront costs. Is this model *always* better? Discuss potential scenarios or types of organizations where a Capital Expense (CapEx) model might still be preferable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
+            <p>This interactive report is based on "Digital Transformation with Google Cloud" learning materials. AI features powered by Gemini.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adoption Chart
+            const ctx = document.getElementById('adoptionChart').getContext('2d');
+            new Chart(ctx, { type: 'doughnut', data: { labels: ['Multicloud Strategy', 'Hybrid Strategy'], datasets: [{ label: 'Adoption Rate', data: [89, 80], backgroundColor: ['rgba(37, 99, 235, 0.8)', 'rgba(13, 148, 136, 0.8)'], borderColor: ['rgba(37, 99, 235, 1)', 'rgba(13, 148, 136, 1)'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', }, title: { display: true, text: 'Cloud Strategy Adoption (Flexera 2022)' }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) { label += ': '; } if (context.parsed !== null) { label += context.parsed + '%'; } return label; } } } } } });
+
+            // Service Model Tabs & Use Case Generator
+            const serviceTabs = document.querySelectorAll('.service-tab');
+            const servicePanels = document.querySelectorAll('.service-panel');
+            const useCaseBtn = document.getElementById('use-case-btn');
+            const useCaseOutput = document.getElementById('use-case-output');
+            let activeTab = 'iaas';
+
+            serviceTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activeTab = tab.getAttribute('data-tab');
+                    serviceTabs.forEach(t => { t.classList.remove('text-blue-600', 'border-blue-600'); t.classList.add('text-slate-500'); });
+                    tab.classList.add('text-blue-600', 'border-blue-600');
+                    tab.classList.remove('text-slate-500');
+                    const targetPanelId = activeTab + '-content';
+                    servicePanels.forEach(panel => { panel.id === targetPanelId ? panel.classList.remove('hidden') : panel.classList.add('hidden'); });
+                    useCaseOutput.innerHTML = '';
+                });
+            });
+
+            useCaseBtn.addEventListener('click', async () => {
+                const modelName = activeTab.toUpperCase();
+                const prompt = `Provide three distinct, real-world business use cases for ${modelName} (Infrastructure as a Service, Platform as a Service, or Software as a Service). For each, briefly explain in a single paragraph why ${modelName} is the appropriate choice. Format the response clearly with numbered points.`;
+                useCaseOutput.innerHTML = '<div class="loader"></div>';
+                
+                try {
+                    const responseText = await callGemini(prompt);
+                    useCaseOutput.innerHTML = responseText.replace(/\n/g, '<br>');
+                } catch (error) {
+                    console.error('Error:', error);
+                    useCaseOutput.textContent = 'Sorry, an error occurred while generating use cases.';
+                }
+            });
+
+            // Shared Responsibility Diagram
+            const respBtns = document.querySelectorAll('.resp-btn');
+            const respItems = document.querySelectorAll('.responsibility-item');
+            const responsibilityMap = { iaas: ['customer', 'customer', 'customer', 'customer', 'google', 'google'], paas: ['customer', 'customer', 'customer', 'google', 'google', 'google'], saas: ['customer', 'customer', 'google', 'google', 'google', 'google'] };
+            
+            function updateResponsibilityView(model) {
+                const responsibilities = responsibilityMap[model];
+                respItems.forEach((item, index) => { item.classList.remove('customer', 'google'); item.classList.add(responsibilities[index]); });
+                respBtns.forEach(btn => {
+                    if (btn.getAttribute('data-model') === model) { btn.classList.add('bg-blue-500', 'text-white'); btn.classList.remove('bg-slate-200', 'text-slate-700'); }
+                    else { btn.classList.add('bg-slate-200', 'text-slate-700'); btn.classList.remove('bg-blue-500', 'text-white'); }
+                });
+            }
+            respBtns.forEach(btn => btn.addEventListener('click', () => updateResponsibilityView(btn.getAttribute('data-model'))));
+            updateResponsibilityView('iaas');
+
+            // Cloud Strategy Advisor
+            const advisorBtn = document.getElementById('advisor-btn');
+            const scenarioInput = document.getElementById('scenario-input');
+            const advisorOutput = document.getElementById('advisor-output');
+
+            advisorBtn.addEventListener('click', async () => {
+                const scenario = scenarioInput.value;
+                if (!scenario.trim()) {
+                    advisorOutput.textContent = 'Please describe your scenario in the text box above.';
+                    return;
+                }
+                const prompt = `Based on the following business scenario, recommend a primary cloud infrastructure strategy (e.g., Public Cloud, Hybrid Cloud) and a primary service model (IaaS, PaaS, SaaS). Explain your reasoning in a few paragraphs, touching on scalability, cost, control, and typical use cases. Format the response with clear headings for 'Recommended Strategy' and 'Reasoning'. Scenario: "${scenario}"`;
+                advisorOutput.innerHTML = '<div class="loader"></div>';
+                try {
+                    const responseText = await callGemini(prompt);
+                    advisorOutput.innerHTML = responseText.replace(/\n/g, '<br>');
+                } catch (error) {
+                    console.error('Error:', error);
+                    advisorOutput.textContent = 'Sorry, an error occurred while generating your recommendation.';
+                }
+            });
+
+            // Quiz Logic
+            const quizContainer = document.getElementById('quiz-container');
+            const submitQuizBtn = document.getElementById('submit-quiz-btn');
+            const quizResults = document.getElementById('quiz-results');
+
+            const quizQuestions = [
+                {
+                    question: "An organization wants to migrate its data center to the cloud to avoid managing physical hardware but wants full control over its operating systems. Which service model is most appropriate?",
+                    options: ["SaaS", "PaaS", "IaaS", "On-Premises"],
+                    answer: "IaaS"
+                },
+                {
+                    question: "In the Shared Responsibility Model for a SaaS application, who is responsible for securing the underlying infrastructure (like physical data centers)?",
+                    options: ["The Customer", "The Cloud Provider", "Both equally", "A third-party auditor"],
+                    answer: "The Cloud Provider"
+                },
+                {
+                    question: "What is the primary financial benefit of shifting from on-premises infrastructure to a public cloud model?",
+                    options: ["Increased capital expenditure (CapEx)", "Shifting from capital expenditure (CapEx) to operating expenditure (OpEx)", "Guaranteed fixed monthly costs", "Elimination of all IT staff costs"],
+                    answer: "Shifting from capital expenditure (CapEx) to operating expenditure (OpEx)"
+                },
+                {
+                    question: "A company uses Google Cloud for data analytics and another public cloud provider for its primary web hosting. What is this strategy called?",
+                    options: ["Hybrid Cloud", "Private Cloud", "On-Premises", "Multicloud"],
+                    answer: "Multicloud"
+                }
+            ];
+
+            function renderQuiz() {
+                let quizHTML = '';
+                quizQuestions.forEach((q, index) => {
+                    quizHTML += `<div class="mb-6 bg-white p-6 rounded-lg shadow-sm">`;
+                    quizHTML += `<p class="font-semibold text-slate-800 mb-4">${index + 1}. ${q.question}</p>`;
+                    quizHTML += `<div class="space-y-2">`;
+                    q.options.forEach(option => {
+                        quizHTML += `<label class="flex items-center p-3 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer quiz-option">`;
+                        quizHTML += `<input type="radio" name="question${index}" value="${option}" class="mr-3 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500">`;
+                        quizHTML += `<span>${option}</span>`;
+                        quizHTML += `</label>`;
+                    });
+                    quizHTML += `</div></div>`;
+                });
+                quizContainer.innerHTML = quizHTML;
+            }
+
+            submitQuizBtn.addEventListener('click', () => {
+                let score = 0;
+                quizQuestions.forEach((q, index) => {
+                    const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                    const options = document.querySelectorAll(`input[name="question${index}"]`);
+                    
+                    options.forEach(opt => {
+                        const label = opt.parentElement;
+                        label.classList.remove('correct', 'incorrect');
+                         if(opt.value === q.answer) {
+                            label.classList.add('correct');
+                        }
+                    });
+
+                    if (selectedOption) {
+                        if (selectedOption.value === q.answer) {
+                            score++;
+                        } else {
+                            selectedOption.parentElement.classList.add('incorrect');
+                        }
+                    }
+                });
+                
+                quizResults.innerHTML = `<h3 class="text-2xl font-bold text-slate-900">Your Score: ${score} out of ${quizQuestions.length}</h3>`;
+                submitQuizBtn.textContent = "Try Again";
+            });
+            
+            renderQuiz();
+
+            // Centralized Gemini API Call Function
+            async function callGemini(prompt) {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) { throw new Error(`API call failed with status: ${response.status}`); }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Unexpected response structure from API.');
+                }
+            }
+        });
+    </script>
+        <main class="py-16 sm:py-24">
+            <section id="quiz">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">📝 Knowledge Check</h1>
+                        <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Test your understanding of the key digital transformation concepts.</p>
+                    </div>
+                    <div id="quiz-container" class="mt-12 max-w-2xl mx-auto">
+                        <!-- Quiz questions will be rendered here by JavaScript -->
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="submit-quiz-btn" class="bg-blue-600 text-white font-medium py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Submit Answers</button>
+                    </div>
+                    <div id="quiz-results" class="mt-8 max-w-2xl mx-auto text-center"></div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="bg-slate-800 mt-16">
+            <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
+                <p>This interactive quiz is based on "Digital Transformation with Google Cloud" learning materials.</p>
+            </div>
+        </footer>
+    
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const quizContainer = document.getElementById('quiz-container');
+                const submitQuizBtn = document.getElementById('submit-quiz-btn');
+                const quizResults = document.getElementById('quiz-results');
+    
+                const quizData = {
+                  "questions": [
+                    {
+                      "question": "A retail company replaces its manual inventory system with a real-time, cloud-based platform that also analyzes sales trends to automatically predict stock needs. What does this process best represent?",
+                      "hint": "Think about the fundamental change in business processes, not just the technology itself.",
+                      "answerOptions": [
+                        { "text": "Digital Transformation", "rationale": "This involves adopting new technology to fundamentally change business processes, culture, and customer experiences, which aligns with the scenario.", "isCorrect": true },
+                        { "text": "An IT Infrastructure Upgrade", "rationale": "While an infrastructure upgrade is part of the process, this term doesn't capture the complete overhaul of the business process and the use of data analytics.", "isCorrect": false },
+                        { "text": "Data Migration", "rationale": "Moving data to the new platform is a necessary step, but it is only one component of the much broader business change described.", "isCorrect": false },
+                        { "text": "Cost Optimization", "rationale": "Cost savings might be a result of this new system, but it describes a potential outcome, not the overarching strategic process itself.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "A European bank must keep all customer transaction data within its own on-premises data center due to strict national regulations. However, it wants to use a public cloud's advanced tools for its non-sensitive development and testing workloads. Which IT infrastructure model should it adopt?",
+                      "hint": "Consider the model that combines the security of an on-premises environment with the flexibility of a public cloud.",
+                      "answerOptions": [
+                        { "text": "Public Cloud only", "rationale": "Using only a public cloud would violate the strict data residency regulations the bank must follow for its customer data.", "isCorrect": false },
+                        { "text": "Private Cloud only", "rationale": "A private cloud would meet the regulatory needs but would prevent the bank from using the advanced tools available only on the public cloud.", "isCorrect": false },
+                        { "text": "Hybrid Cloud", "rationale": "This model allows an organization to combine its on-premises or private cloud environment with a public cloud, meeting both regulatory and innovation needs.", "isCorrect": true },
+                        { "text": "Multicloud", "rationale": "A multicloud strategy involves using services from more than one public cloud provider, which does not address the need to integrate with an on-premises data center.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "What is a primary advantage of a public cloud's Operating Expense (OpEx) model compared to the traditional on-premises Capital Expense (CapEx) model?",
+                      "hint": "How does the payment structure for cloud services differ from buying and owning your own hardware?",
+                      "answerOptions": [
+                        { "text": "It allows companies to pay only for the computing resources they actually use, improving cost-efficiency and scalability.", "rationale": "The OpEx model avoids large upfront purchases and aligns costs directly with usage, which is a core financial benefit of the cloud.", "isCorrect": true },
+                        { "text": "It requires a large, one-time upfront investment, which makes budgeting more predictable for the long term.", "rationale": "Large, one-time upfront investments are characteristic of the CapEx model, which is associated with purchasing on-premises hardware.", "isCorrect": false },
+                        { "text": "It gives a company complete physical control over its server hardware and data center.", "rationale": "Physical control over hardware is a feature of on-premises infrastructure, not the public cloud's service-based model.", "isCorrect": false },
+                        { "text": "It allows companies to purchase and own physical servers that are managed by the cloud provider.", "rationale": "In a public cloud model, organizations lease resources; they do not purchase or own the physical hardware.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "A startup wants to rapidly develop and deploy a new web application. The small development team wants to focus exclusively on writing code and not worry about managing servers, databases, or runtime environments. Which service model is most appropriate?",
+                      "hint": "This model provides a ready-made playground for developers to build and run their applications without managing the underlying components.",
+                      "answerOptions": [
+                        { "text": "IaaS (Infrastructure as a Service)", "rationale": "This model would still require the team to manage the operating systems and server software, distracting them from their core focus on coding.", "isCorrect": false },
+                        { "text": "SaaS (Software as a Service)", "rationale": "This model provides a finished application for end-users, but the startup needs a platform to build their own application, not use a pre-built one.", "isCorrect": false },
+                        { "text": "PaaS (Platform as a Service)", "rationale": "This model provides the exact environment the team needs: a platform with underlying infrastructure managed by the provider, allowing the team to focus solely on application development.", "isCorrect": true },
+                        { "text": "On-premises", "rationale": "This model would represent the maximum management overhead, which is the opposite of the startup's goal.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "According to the Shared Responsibility Model, which of the following is always the customer's responsibility, regardless of the service model (IaaS, PaaS, or SaaS)?",
+                      "hint": "While the cloud provider secures the foundation, the customer always owns and controls something critical.",
+                      "answerOptions": [
+                        { "text": "Managing the physical security of the data centers.", "rationale": "The physical security of the hardware and data center facilities is always the responsibility of the cloud provider.", "isCorrect": false },
+                        { "text": "Securing their own data and managing user access policies.", "rationale": "The customer controls their data and who can access it; this responsibility never shifts to the cloud provider.", "isCorrect": true },
+                        { "text": "Patching the underlying server hardware's firmware.", "rationale": "The maintenance and security of the core physical hardware is a foundational responsibility of the cloud provider.", "isCorrect": false },
+                        { "text": "Managing the virtualization software (hypervisor).", "rationale": "The hypervisor is part of the core cloud infrastructure and is managed by the cloud provider in all three service models.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "A large enterprise needs to provide its entire workforce with integrated tools for email, video conferencing, and collaborative document editing. Which cloud service model does this scenario describe?",
+                      "hint": "Think of the car analogy: is the enterprise leasing a car, taking a taxi, or riding a bus?",
+                      "answerOptions": [
+                        { "text": "IaaS", "rationale": "IaaS would provide only the raw infrastructure; the enterprise would still need to build or install its own collaboration tools.", "isCorrect": false },
+                        { "text": "PaaS", "rationale": "PaaS is a platform for building new applications, not for consuming pre-built ones like email or video conferencing.", "isCorrect": false },
+                        { "text": "SaaS", "rationale": "This model delivers ready-to-use software (like Google Workspace) directly to end-users, which perfectly matches the enterprise's needs.", "isCorrect": true },
+                        { "text": "Hybrid Cloud", "rationale": "Hybrid cloud is an infrastructure strategy, not a service model that describes how software is delivered to users.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "What is the primary motivation for a company to adopt a multicloud strategy?",
+                      "hint": "Why would a company choose to work with more than one public cloud provider?",
+                      "answerOptions": [
+                        { "text": "To simplify their IT environment by using a single vendor.", "rationale": "A multicloud strategy inherently increases the number of vendors, rather than simplifying to a single one.", "isCorrect": false },
+                        { "text": "To leverage the unique strengths of different cloud providers and avoid vendor lock-in.", "rationale": "This strategy allows a company to pick the best service for a specific job from different providers and maintains negotiating power.", "isCorrect": true },
+                        { "text": "To fulfill a regulatory requirement to keep all data on-premises.", "rationale": "A multicloud strategy involves multiple public clouds, which does not address on-premises data requirements.", "isCorrect": false },
+                        { "text": "To reduce costs by exclusively using a private cloud.", "rationale": "Multicloud refers to using multiple *public* clouds, not a private one.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "A company wants to build a global network of smart, connected devices (IoT). To do this, they need to run their data processing workloads as close to the devices as possible to reduce latency. Which pillar of Google's Transformation Cloud is designed to support this need for scalable, distributed infrastructure?",
+                      "hint": "This pillar focuses on providing the freedom to run applications anywhere, from data centers to the very edge of the network.",
+                      "answerOptions": [
+                        { "text": "Data Cloud", "rationale": "While the company will generate a lot of data, the core requirement here is about the infrastructure's location and flexibility.", "isCorrect": false },
+                        { "text": "Collaboration Cloud", "rationale": "Collaboration tools are not the primary need for an IoT network's infrastructure.", "isCorrect": false },
+                        { "text": "Sustainable Technology", "rationale": "While sustainability is important, it doesn't directly address the technical requirement of running workloads at the edge.", "isCorrect": false },
+                        { "text": "Open Infrastructure", "rationale": "This pillar provides the freedom to securely innovate and scale from on-premises, to the edge, to the cloud, which is ideal for a distributed IoT network.", "isCorrect": true }
+                      ]
+                    },
+                    {
+                      "question": "In an IaaS model, who is responsible for installing and managing a database software like PostgreSQL on a virtual machine?",
+                      "hint": "In this model, the cloud provider gives you the virtual server, but what runs inside it is up to you.",
+                      "answerOptions": [
+                        { "text": "The Customer", "rationale": "With IaaS, the customer has control over the guest operating system and is therefore responsible for installing and managing any software on it.", "isCorrect": true },
+                        { "text": "The Cloud Provider (Google)", "rationale": "The cloud provider is responsible for the underlying infrastructure, but not the specific applications or software the customer chooses to install on their virtual machines.", "isCorrect": false },
+                        { "text": "The database vendor (PostgreSQL Global Development Group)", "rationale": "The vendor provides the software, but the user of the IaaS platform is responsible for its installation and maintenance.", "isCorrect": false },
+                        { "text": "It is a fully managed service, so no one needs to install it.", "rationale": "While managed database services exist (typically as PaaS), in a pure IaaS model, the customer must perform the installation.", "isCorrect": false }
+                      ]
+                    },
+                    {
+                      "question": "Which cloud computing era was primarily characterized by established enterprises migrating their existing IT systems to the cloud, often called a \"lift and shift\" approach, to save costs and increase agility?",
+                      "hint": "This era was the second stage of adoption, where large companies began seeing the cloud as a more efficient place for their existing systems.",
+                      "answerOptions": [
+                        { "text": "The VM Cloud Era", "rationale": "This initial era was defined by new, cloud-native companies building directly in the cloud from the start.", "isCorrect": false },
+                        { "text": "The Transformation Cloud Era", "rationale": "This is the current era, which focuses on fundamentally changing business processes, not just moving existing systems.", "isCorrect": false },
+                        { "text": "The Infrastructure Cloud Era", "rationale": "This era was defined by the migration of existing infrastructure to the cloud to gain efficiencies, which perfectly matches the 'lift and shift' description.", "isCorrect": true },
+                        { "text": "The On-Premises Era", "rationale": "The on-premises era predates cloud adoption and describes traditional IT infrastructure.", "isCorrect": false }
+                      ]
+                    }
+                  ]
+                };
+                
+                function renderQuiz() {
+                    quizContainer.innerHTML = '';
+                    quizResults.innerHTML = '';
+                    submitQuizBtn.textContent = 'Submit Answers';
+                    submitQuizBtn.disabled = false;
+    
+                    quizData.questions.forEach((q, index) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.className = 'mb-6 bg-white p-6 rounded-lg shadow-sm';
+                        
+                        let optionsHTML = '';
+                        // Shuffle options
+                        const shuffledOptions = [...q.answerOptions].sort(() => Math.random() - 0.5);
+    
+                        shuffledOptions.forEach(option => {
+                            optionsHTML += `
+                                <label class="flex items-start p-3 rounded-md border border-slate-200 hover:bg-slate-50 cursor-pointer quiz-option">
+                                    <input type="radio" name="question${index}" value="${option.text}" class="mr-3 mt-1 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500 flex-shrink-0">
+                                    <div class="w-full">
+                                       <span class="option-text">${option.text}</span>
+                                       <p class="rationale">${option.rationale}</p>
+                                    </div>
+                                </label>
+                            `;
+                        });
+    
+                        questionElement.innerHTML = `
+                            <p class="font-semibold text-slate-800 mb-4">${index + 1}. ${q.question}</p>
+                            <p class="text-sm text-slate-500 mb-4 italic">Hint: ${q.hint}</p>
+                            <div class="space-y-2" data-qindex="${index}">${optionsHTML}</div>
+                        `;
+                        quizContainer.appendChild(questionElement);
+                    });
+                }
+    
+                function checkAnswers() {
+                    let score = 0;
+                    quizData.questions.forEach((q, index) => {
+                        const selectedOptionInput = document.querySelector(`input[name="question${index}"]:checked`);
+                        const questionBlock = document.querySelector(`div[data-qindex="${index}"]`);
+                        const optionsInBlock = questionBlock.querySelectorAll('.quiz-option');
+    
+                        // Show all rationales for this question
+                        optionsInBlock.forEach(optLabel => {
+                            optLabel.classList.add('show-rationale');
+                        });
+    
+                        if (selectedOptionInput) {
+                            const isCorrect = q.answerOptions.find(opt => opt.text === selectedOptionInput.value).isCorrect;
+                            if (isCorrect) {
+                                score++;
+                                selectedOptionInput.parentElement.classList.add('correct');
+                            } else {
+                                selectedOptionInput.parentElement.classList.add('incorrect');
+                                // Also highlight the correct one
+                                const correctValue = q.answerOptions.find(opt => opt.isCorrect).text;
+                                const correctInput = document.querySelector(`input[name="question${index}"][value="${correctValue}"]`);
+                                correctInput.parentElement.classList.add('correct');
+                            }
+                        } else {
+                             // If no answer selected, just highlight the correct one
+                            const correctValue = q.answerOptions.find(opt => opt.isCorrect).text;
+                            const correctInput = document.querySelector(`input[name="question${index}"][value="${correctValue}"]`);
+                            correctInput.parentElement.classList.add('correct');
+                        }
+                    });
+                    
+                    quizResults.innerHTML = `<h3 class="text-2xl font-bold text-slate-900">Your Score: ${score} out of ${quizData.questions.length}</h3>`;
+                    submitQuizBtn.textContent = "Try Again";
+                    submitQuizBtn.onclick = renderQuiz;
+                }
+                
+                submitQuizBtn.onclick = checkAnswers;
+                
+                renderQuiz();
+            });
+        </script>
+</body>
+</html>

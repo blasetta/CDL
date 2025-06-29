@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP Data Platform Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: A three-part, task-oriented SPA. Part 1 introduces the core concepts (DB, DW, DL) visually. Part 2 is an interactive "Service Explorer" where users select a system type to dynamically generate a comparative chart and detailed info cards for the relevant GCP services. This prioritizes comparison and decision-making over linear reading. Part 3 visualizes concrete architectural patterns (Data Lake, Pipelines) using HTML/CSS diagrams. This structure guides the user from high-level concepts to specific tools to practical implementation, creating a powerful learning path. -->
+    <!-- Visualization & Content Choices: 1. Core Concepts: Used a three-card layout with Unicode icons and hover interactions for a quick, scannable intro. Goal: Inform. Method: HTML/CSS. 2. Service Comparison: An interactive polar area chart (Chart.js) dynamically updates based on user button clicks (Relational, NoSQL, etc.). This provides immediate visual comparison of service strengths (e.g., scale, consistency). Detailed text cards update in sync with the chart. Goal: Compare. Method: Chart.js, JS DOM manipulation. 3. Architectures: System diagrams are built with styled HTML divs (flexbox, borders) to show data flows. Hover tooltips provide context on each service's role. Goal: Organize & Show Relationships. Method: HTML/CSS, JS for interaction. 4. GCP Services List: Simple HTML list for quick reference. Goal: Inform. Method: HTML. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flow-arrow::after {
+            content: '→';
+            position: absolute;
+            top: 50%;
+            right: -1.25rem;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #9ca3af;
+        }
+        .flow-arrow-down::after {
+            content: '↓';
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #9ca3af;
+        }
+        .service-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-blue-600">Data Architecture on GCP</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#concepts" class="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Core Concepts</a>
+                        <a href="#explorer" class="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Service Explorer</a>
+                        <a href="#architectures" class="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Architectures</a>
+                        <a href="#services" class="text-gray-600 hover:bg-gray-100 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Services List</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section id="introduction" class="text-center mb-20">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">A Visual Guide to Modern Data Platforms</h1>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                This application translates the comprehensive report on data systems into an interactive experience. Explore the core differences between data platforms, compare specific Google Cloud services, and see how they are assembled into powerful, modern architectures.
+            </p>
+        </section>
+
+        <section id="concepts" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900">Core Concepts: The Three Pillars of Data</h2>
+                <p class="mt-2 text-lg text-gray-600">Understand the fundamental purpose and design of each data system paradigm.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="service-card bg-white p-8 rounded-xl border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">🗃️</div>
+                    <h3 class="text-xl font-semibold mb-2">Databases</h3>
+                    <p class="text-gray-600">The operational core. Designed for <strong class="text-blue-600">Online Transaction Processing (OLTP)</strong>. They capture and maintain the current state of the business with high reliability (ACID guarantees), handling frequent, small reads and writes.</p>
+                </div>
+                <div class="service-card bg-white p-8 rounded-xl border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">📈</div>
+                    <h3 class="text-xl font-semibold mb-2">Data Warehouses</h3>
+                    <p class="text-gray-600">The analytical engine. Built for <strong class="text-green-600">Online Analytical Processing (OLAP)</strong>. They consolidate historical data from many sources into a structured format for business intelligence and complex queries.</p>
+                </div>
+                <div class="service-card bg-white p-8 rounded-xl border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">🌊</div>
+                    <h3 class="text-xl font-semibold mb-2">Data Lakes</h3>
+                    <p class="text-gray-600">The universal repository. Designed to store massive quantities of <strong class="text-orange-600">raw data in its native format</strong>. They offer maximum flexibility for future, often unforeseen, use cases like machine learning and data exploration.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="explorer" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900">GCP Service Explorer</h2>
+                <p class="mt-2 text-lg text-gray-600">Select a category to visually compare relevant GCP services and explore their details. This section helps you choose the right tool for the job by highlighting key trade-offs in scalability, consistency, and cost.</p>
+            </div>
+            <div class="flex justify-center flex-wrap gap-2 mb-8">
+                <button data-category="relational" class="comparison-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-transform transform hover:scale-105">Relational DBs</button>
+                <button data-category="nosql" class="comparison-btn bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-transform transform hover:scale-105">NoSQL DBs</button>
+                <button data-category="analytics" class="comparison-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-transform transform hover:scale-105">Analytics & Storage</button>
+            </div>
+            
+            <div class="grid lg:grid-cols-5 gap-8 items-start">
+                <div class="lg:col-span-2">
+                    <div class="chart-container bg-white p-4 rounded-xl border border-gray-200">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+                <div id="serviceDetails" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                </div>
+            </div>
+        </section>
+        
+        <section id="architectures" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900">Architecting Modern Solutions</h2>
+                <p class="mt-2 text-lg text-gray-600">See how individual services are composed into robust, end-to-end data platforms on GCP. These diagrams illustrate the flow of data from ingestion to analysis.</p>
+            </div>
+            <div class="space-y-16">
+                <div class="bg-white p-8 rounded-xl border border-gray-200">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">GCP Data Lake Architecture</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">A modern data lake on GCP is a composed architecture of several services. Data is ingested, stored raw in GCS, processed by services like Dataflow, and then served for analysis by BigQuery or ML models in Vertex AI. Hover over a service for its role.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-12 text-center items-center">
+                        <div class="space-y-2 relative flow-arrow">
+                             <div class="tooltip-container relative group">
+                                <div class="bg-red-100 text-red-800 p-3 rounded-lg font-mono">Pub/Sub</div>
+                                <div class="tooltip-text">Ingests and buffers real-time event streams from applications and IoT devices.</div>
+                             </div>
+                             <div class="tooltip-container relative group">
+                                <div class="bg-red-100 text-red-800 p-3 rounded-lg font-mono">Storage Transfer</div>
+                                <div class="tooltip-text">Performs large-scale, scheduled data transfers from on-premises or other clouds.</div>
+                             </div>
+                             <div class="font-semibold">Ingestion</div>
+                        </div>
+
+                        <div class="space-y-2 relative flow-arrow">
+                            <div class="tooltip-container relative group">
+                                <div class="bg-orange-100 text-orange-800 p-3 rounded-lg font-mono">Cloud Storage</div>
+                                <div class="tooltip-text">The central, scalable, and cost-effective repository for all raw data.</div>
+                            </div>
+                            <div class="font-semibold">Storage</div>
+                        </div>
+
+                        <div class="space-y-2 relative flow-arrow">
+                            <div class="tooltip-container relative group">
+                                <div class="bg-yellow-100 text-yellow-800 p-3 rounded-lg font-mono">Dataflow</div>
+                                <div class="tooltip-text">Executes serverless ETL/ELT pipelines for both streaming and batch data.</div>
+                            </div>
+                            <div class="tooltip-container relative group">
+                                <div class="bg-yellow-100 text-yellow-800 p-3 rounded-lg font-mono">Dataproc</div>
+                                <div class="tooltip-text">Manages Spark/Hadoop clusters for large-scale batch processing.</div>
+                            </div>
+                            <div class="font-semibold">Processing</div>
+                        </div>
+
+                        <div class="space-y-2">
+                             <div class="tooltip-container relative group">
+                                <div class="bg-green-100 text-green-800 p-3 rounded-lg font-mono">BigQuery</div>
+                                <div class="tooltip-text">Provides a serverless SQL engine for interactive analytics.</div>
+                             </div>
+                             <div class="tooltip-container relative group">
+                                <div class="bg-green-100 text-green-800 p-3 rounded-lg font-mono">Vertex AI</div>
+                                <div class="tooltip-text">A platform for building and deploying ML models on lake data.</div>
+                             </div>
+                             <div class="font-semibold">Analytics & Serving</div>
+                        </div>
+                    </div>
+                     <div class="tooltip-container relative group mt-8">
+                        <div class="w-full bg-gray-200 text-gray-800 p-3 rounded-lg font-mono text-center">Dataplex & IAM</div>
+                        <div class="tooltip-text">Manages metadata, data quality, and security policies across the entire lake.</div>
+                        <div class="font-semibold mt-2 text-center">Governance</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Example Streaming Pipeline (ELT)</h3>
+                     <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">This demonstrates a common ELT (Extract, Load, Transform) pattern for real-time data. Events are ingested via Pub/Sub, loaded raw into BigQuery by a simple Dataflow job, and then transformed within BigQuery using SQL for analysis.</p>
+                    <div class="flex flex-col md:flex-row justify-around items-center space-y-8 md:space-y-0 md:space-x-8">
+                        <div class="text-center relative md:flow-arrow">
+                            <div class="text-4xl mb-2">📥</div>
+                            <div class="bg-red-100 text-red-800 p-3 rounded-lg font-mono">Pub/Sub</div>
+                            <div class="font-semibold mt-2">1. Extract</div>
+                            <p class="text-sm text-gray-500 mt-1">Real-time events arrive.</p>
+                        </div>
+                        <div class="text-center relative md:flow-arrow">
+                             <div class="text-4xl mb-2">🚚</div>
+                            <div class="bg-yellow-100 text-yellow-800 p-3 rounded-lg font-mono">Dataflow</div>
+                            <div class="font-semibold mt-2">2. Load</div>
+                             <p class="text-sm text-gray-500 mt-1">Stream raw data to destination.</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">🔧</div>
+                            <div class="bg-green-100 text-green-800 p-3 rounded-lg font-mono">BigQuery</div>
+                            <div class="font-semibold mt-2">3. Transform</div>
+                            <p class="text-sm text-gray-500 mt-1">Clean & model data with SQL.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                 <h2 class="text-3xl font-bold tracking-tight text-gray-900">Key GCP Services Mentioned</h2>
+                 <p class="mt-2 text-lg text-gray-600">A quick reference list of the primary data services covered in this guide.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl border border-gray-200">
+                <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-gray-700">
+                    <li class="flex items-center space-x-2"><span>•</span><span>Cloud SQL</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Cloud Spanner</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Firestore</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Bigtable</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>BigQuery</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Cloud Storage</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Pub/Sub</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Dataflow</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Dataproc</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Dataplex</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Vertex AI</span></li>
+                    <li class="flex items-center space-x-2"><span>•</span><span>Cloud Composer</span></li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-100 border-t border-gray-200 mt-24">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+            <p>Interactive visualization based on the "Comprehensive Analysis of Modern Data Architectures" report.</p>
+            <p>This is a conceptual tool and does not represent an official Google Cloud product.</p>
+        </div>
+    </footer>
+
+    <style>
+        .tooltip-container .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-container .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const serviceData = {
+                relational: {
+                    labels: ['Scalability', 'Consistency', 'Global Reach', 'Cost-Effectiveness', 'Migration Simplicity'],
+                    datasets: [
+                        {
+                            label: 'Cloud SQL',
+                            data: [3, 5, 2, 5, 5],
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                        },
+                        {
+                            label: 'Cloud Spanner',
+                            data: [5, 5, 5, 2, 2],
+                            backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                            borderColor: 'rgb(34, 197, 94)',
+                            pointBackgroundColor: 'rgb(34, 197, 94)',
+                        }
+                    ],
+                    details: [
+                        {
+                            name: 'Cloud SQL',
+                            icon: '🗄️',
+                            description: 'A fully managed relational database service for MySQL, PostgreSQL, and SQL Server. Best for traditional applications with a regional user base.',
+                            useCases: ['Web Apps & CMS', 'E-commerce Platforms', 'CRM & ERP Systems'],
+                            keyBenefit: 'Familiar, cost-effective, and easy to migrate existing workloads.'
+                        },
+                        {
+                            name: 'Cloud Spanner',
+                            icon: '🌍',
+                            description: 'A globally distributed database that combines relational structure with non-relational horizontal scale. Built for planet-scale applications.',
+                            useCases: ['Global Financial Systems', 'Supply Chain Management', 'Massive Online Games'],
+                            keyBenefit: 'Global ACID transactions with virtually unlimited scalability and 99.999% availability.'
+                        }
+                    ]
+                },
+                nosql: {
+                    labels: ['Scalability', 'Data Model Flexibility', 'Real-time Sync', 'Throughput', 'Developer Ease'],
+                     datasets: [
+                        {
+                            label: 'Firestore',
+                            data: [5, 5, 5, 3, 5],
+                            backgroundColor: 'rgba(249, 115, 22, 0.5)',
+                            borderColor: 'rgb(249, 115, 22)',
+                            pointBackgroundColor: 'rgb(249, 115, 22)',
+                        },
+                        {
+                            label: 'Bigtable',
+                            data: [5, 2, 1, 5, 2],
+                            backgroundColor: 'rgba(168, 85, 247, 0.5)',
+                            borderColor: 'rgb(168, 85, 247)',
+                            pointBackgroundColor: 'rgb(168, 85, 247)',
+                        }
+                    ],
+                    details: [
+                         {
+                            name: 'Cloud Firestore',
+                            icon: '📱',
+                            description: 'A serverless, NoSQL document database built for mobile, web, and server development. Features real-time updates and offline support.',
+                            useCases: ['Chat & Messaging Apps', 'Live Leaderboards', 'Collaborative Tools'],
+                            keyBenefit: 'Accelerates development of responsive, collaborative applications.'
+                        },
+                        {
+                            name: 'Cloud Bigtable',
+                            icon: '⚡',
+                            description: 'A high-throughput NoSQL wide-column store for large-scale analytical and operational workloads. Powers major Google services.',
+                            useCases: ['IoT Time-Series Data', 'Large-Scale Analytics', 'Ad Tech & Personalization'],
+                            keyBenefit: 'Extremely high throughput and low latency for petabyte-scale data.'
+                        }
+                    ]
+                },
+                analytics: {
+                    labels: ['Query Speed', 'Data Format Flexibility', 'Serverless', 'Cost-Effectiveness', 'ML Integration'],
+                    datasets: [
+                        {
+                            label: 'BigQuery',
+                            data: [5, 4, 5, 4, 5],
+                             backgroundColor: 'rgba(22, 163, 74, 0.5)',
+                            borderColor: 'rgb(22, 163, 74)',
+                            pointBackgroundColor: 'rgb(22, 163, 74)',
+                        },
+                        {
+                            label: 'Cloud Storage',
+                            data: [2, 5, 5, 5, 2],
+                            backgroundColor: 'rgba(234, 179, 8, 0.5)',
+                            borderColor: 'rgb(234, 179, 8)',
+                            pointBackgroundColor: 'rgb(234, 179, 8)',
+                        }
+                    ],
+                    details: [
+                        {
+                            name: 'BigQuery',
+                            icon: '🔍',
+                            description: 'A serverless, highly scalable enterprise data warehouse. Decouples storage and compute to run SQL queries over massive datasets in seconds.',
+                            useCases: ['BI & Interactive Dashboards', 'Real-time Analytics', 'BigQuery ML'],
+                            keyBenefit: 'Democratizes data analytics with zero infrastructure management and powerful built-in ML.'
+                        },
+                        {
+                            name: 'Cloud Storage',
+                            icon: '📦',
+                            description: 'A cost-effective, durable object storage service that serves as the foundation for a data lake. Stores unlimited data in any format.',
+                            useCases: ['Data Lake Storage', 'Backup & Archive', 'Content Delivery'],
+                            keyBenefit: 'Maximum flexibility and low cost for storing raw data, enabling ELT patterns.'
+                        }
+                    ]
+                }
+            };
+            
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            let comparisonChart = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            pointLabels: {
+                                display: true,
+                                centerPointLabels: true,
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                color: '#4b5563'
+                            },
+                            ticks: {
+                                display: false,
+                                backdropColor: 'transparent',
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            angleLines: {
+                                color: '#e5e7eb'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 5
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                             labels: {
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const detailsContainer = document.getElementById('serviceDetails');
+            const buttons = document.querySelectorAll('.comparison-btn');
+            
+            function updateComparisonView(category) {
+                const data = serviceData[category];
+                if (!data) return;
+
+                comparisonChart.data.labels = data.labels;
+                comparisonChart.data.datasets = data.datasets;
+                comparisonChart.update();
+
+                detailsContainer.innerHTML = '';
+                data.details.forEach(service => {
+                    const card = document.createElement('div');
+                    card.className = 'service-card bg-white p-6 rounded-xl border border-gray-200 flex flex-col';
+                    card.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <span class="text-3xl mr-3">${service.icon}</span>
+                            <h4 class="text-xl font-bold">${service.name}</h4>
+                        </div>
+                        <p class="text-gray-600 mb-4 flex-grow">${service.description}</p>
+                        <div class="mb-4">
+                            <h5 class="font-semibold text-sm mb-2 text-gray-700">Ideal Use Cases:</h5>
+                            <div class="flex flex-wrap gap-2">
+                                ${service.useCases.map(uc => `<span class="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">${uc}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-sm text-gray-700">Key Benefit:</h5>
+                            <p class="text-gray-600 text-sm">${service.keyBenefit}</p>
+                        </div>
+                    `;
+                    detailsContainer.appendChild(card);
+                });
+            }
+
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    buttons.forEach(btn => btn.classList.remove('ring-2', 'ring-offset-2', 'ring-indigo-500'));
+                    button.classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500');
+                    const category = button.dataset.category;
+                    updateComparisonView(category);
+                });
+            });
+
+            updateComparisonView('relational');
+            document.querySelector('.comparison-btn[data-category="relational"]').classList.add('ring-2', 'ring-offset-2', 'ring-indigo-500');
+        });
+    </script>
+</body>
+</html>

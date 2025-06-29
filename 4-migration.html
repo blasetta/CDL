@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Google Cloud Modernization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page, vertically scrolling dashboard with a sticky navigation header. This structure allows users to either flow through the content logically from top to bottom or use the navigation to jump directly to a topic of interest (Migration, Infrastructure, Applications, Scenarios, Quiz). This is more intuitive than a slide-by-slide presentation. Key interactions include: 1) Clickable cards for migration strategies to reveal details on demand. 2) Interactive comparison charts to visualize trade-offs between technologies. 3) Two interactive quizzes to test knowledge actively. This structure was chosen to transform passive content consumption into an active, exploratory learning experience, enhancing user engagement and comprehension. -->
+    <!-- Visualization & Content Choices:
+        - Migration Strategies: Goal: Compare/Inform. Method: Interactive cards (HTML/JS) and a horizontal bar chart (Chart.js). Interaction: Click to reveal info. Justification: Cards break down complex info into digestible chunks, and the chart provides a quick visual summary of complexity vs. benefit.
+        - Infrastructure Options: Goal: Compare. Method: A bubble chart (Chart.js). Interaction: Hover tooltips. Justification: Visualizes the multi-dimensional relationship between abstraction, control, and typical use cases in a single, engaging graphic.
+        - Monolith vs. Microservices: Goal: Inform. Method: Diagram using HTML/Tailwind. Interaction: Hover highlights. Justification: A simple visual is the clearest way to explain this architectural shift.
+        - Interactive Quizzes: Goal: Engage/Test. Method: Dynamic quizzes (HTML/JS). Interaction: User selects an answer and gets immediate feedback. Justification: Reinforces learning through active participation rather than passive reading. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .active-nav, .nav-link:hover {
+            color: #0d9488; /* teal-600 */
+            border-bottom-color: #0d9488;
+        }
+        .strategy-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .strategy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .quiz-option {
+            transition: background-color 0.3s, color 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-slate-800 antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4">
+            <nav class="flex items-center justify-between h-20">
+                <h1 class="text-xl md:text-2xl font-bold text-teal-700">Google Cloud Modernization</h1>
+                <div class="hidden md:flex items-center space-x-6 lg:space-x-8 text-sm lg:text-base">
+                    <a href="#strategies" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Migration Strategies</a>
+                    <a href="#infrastructure" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Infrastructure</a>
+                    <a href="#applications" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Applications</a>
+                    <a href="#scenarios" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Scenarios</a>
+                    <a href="#general-quiz" class="nav-link text-slate-600 font-medium pb-1 border-b-2 border-transparent">Quiz</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-slate-600 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </nav>
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <a href="#strategies" class="block py-2 px-4 text-sm text-slate-600 hover:bg-teal-50 rounded">Migration Strategies</a>
+                <a href="#infrastructure" class="block py-2 px-4 text-sm text-slate-600 hover:bg-teal-50 rounded">Infrastructure</a>
+                <a href="#applications" class="block py-2 px-4 text-sm text-slate-600 hover:bg-teal-50 rounded">Applications</a>
+                <a href="#scenarios" class="block py-2 px-4 text-sm text-slate-600 hover:bg-teal-50 rounded">Interactive Scenarios</a>
+                 <a href="#general-quiz" class="block py-2 px-4 text-sm text-slate-600 hover:bg-teal-50 rounded">Quiz</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+
+        <!-- Section 1: Migration Strategies -->
+        <section id="strategies" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Cloud Migration Strategies: The 6 R's</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">
+                Understanding how to handle existing applications, or "workloads," is the first step in any cloud journey. Google Cloud outlines six core strategies, often called the "6 R's," to guide your modernization path. Explore each strategy below to see how it works and when it's the right choice.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="strategies-container">
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                 <h3 class="text-2xl font-bold text-center mb-4">Strategies at a Glance</h3>
+                 <p class="text-center text-slate-600 max-w-2xl mx-auto mb-6">
+                    This chart compares the migration strategies based on the level of effort required and the potential cloud-native benefits gained. Strategies on the right offer greater transformation but require more work.
+                </p>
+                <div class="chart-container">
+                    <canvas id="strategies-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Infrastructure Modernization -->
+        <section id="infrastructure" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Choosing Your Compute Foundation</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">
+                Modernizing infrastructure means moving from rigid on-premises hardware to flexible, cloud-based compute services. Google Cloud provides a spectrum of options, from full-control Virtual Machines to fully-managed serverless platforms. The key is finding the right balance of control and abstraction for your workload.
+            </p>
+            
+            <div id="compute-options-tabs" class="flex justify-center mb-8 border-b border-slate-200">
+            </div>
+            <div id="compute-options-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg mt-16">
+                 <h3 class="text-2xl font-bold text-center mb-4">Control vs. Abstraction</h3>
+                <p class="text-center text-slate-600 max-w-2xl mx-auto mb-6">
+                    This chart visualizes the trade-offs between different compute models. As you move from VMs to Serverless, Google manages more of the underlying infrastructure (higher abstraction), giving you less granular control but more operational simplicity.
+                </p>
+                <div class="chart-container">
+                    <canvas id="compute-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Application Modernization -->
+        <section id="applications" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Rethinking Application Architecture</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">
+                Beyond infrastructure, true modernization transforms how applications are built and managed. This involves shifting from slow, monolithic designs to agile, microservices-based architectures and leveraging APIs to connect services and create new value.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">From Monolith to Microservices</h3>
+                    <p class="text-slate-600 mb-6">The traditional monolithic approach bundles all application components into a single, tightly-coupled unit, making updates slow and risky. The modern microservices approach breaks the application into a collection of small, independent services that can be developed, deployed, and scaled individually.</p>
+                    <div class="flex space-x-4">
+                        <div class="flex-1 text-center">
+                            <h4 class="font-semibold mb-2">Monolith</h4>
+                            <div class="bg-slate-200 p-4 rounded-lg h-32 flex items-center justify-center font-mono text-slate-600">
+                                [ UI | Business Logic | Data Access ]
+                            </div>
+                        </div>
+                        <div class="flex items-center text-3xl text-teal-500">&rarr;</div>
+                        <div class="flex-1 text-center">
+                             <h4 class="font-semibold mb-2">Microservices</h4>
+                             <div class="h-32 space-y-2">
+                                <div class="bg-teal-100 text-teal-800 p-2 rounded-lg font-mono text-sm">[Service A]</div>
+                                <div class="bg-teal-100 text-teal-800 p-2 rounded-lg font-mono text-sm">[Service B]</div>
+                                <div class="bg-teal-100 text-teal-800 p-2 rounded-lg font-mono text-sm">[Service C]</div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">The Power of APIs</h3>
+                    <p class="text-slate-600 mb-6">Application Programming Interfaces (APIs) are the contracts that allow different software programs to communicate. Think of an API like a waiter in a restaurant: it takes your request, brings it to the kitchen (the back-end service), and returns the result to you, without you needing to know how the kitchen works.</p>
+                     <div class="flex items-center justify-around bg-slate-100 p-4 rounded-lg">
+                        <div class="text-center">
+                            <span class="text-4xl">🖥️</span>
+                            <p class="font-semibold mt-1">Requesting App</p>
+                        </div>
+                        <div class="text-center text-teal-600 font-bold text-xl font-mono">
+                            &lt;API&gt;
+                            <div class="text-3xl">&harr;</div>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-4xl">⚙️</span>
+                             <p class="font-semibold mt-1">Backend Service</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mt-6">Google Cloud's <strong class="text-teal-700">Apigee</strong> is a platform for developing, securing, and managing APIs at scale.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Interactive Scenarios -->
+        <section id="scenarios" class="mb-20 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-4">Test Your Knowledge: Scenarios</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">
+                Let's apply what you've learned. Read through the following business scenarios and choose the most appropriate modernization strategy. This interactive quiz will help solidify your understanding of when to apply each approach.
+            </p>
+            <div id="quiz-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+            </div>
+        </section>
+
+        <!-- Section 5: General Knowledge Quiz -->
+        <section id="general-quiz" class="scroll-mt-24">
+             <h2 class="text-3xl font-bold text-center mb-4">Interactive Quiz: Modernizing with Google Cloud</h2>
+             <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">
+                This final quiz covers key concepts, technologies, and terms from across the guide. Test your overall understanding of modernizing infrastructure and applications with Google Cloud.
+            </p>
+            <div id="general-quiz-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-8 mt-12 border-t border-slate-200">
+        <p class="text-slate-500">An Interactive Guide to Google Cloud Modernization.</p>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const appData = {
+        strategies: [
+            { name: 'Retired', icon: '🗑️', description: 'Decommissioning and removing a workload entirely.', details: 'A workload might be retired if it is no longer necessary, not cost-effective, insecure, or incompatible with the target platform.' },
+            { name: 'Retained', icon: '🔒', description: 'Intentionally keeping a workload in its current environment.', details: 'Typically kept on-premises or in a hybrid cloud setup. The business continues to manage it directly, not subject to cloud provider control.' },
+            { name: 'Rehosted', icon: '🚚', description: 'Also known as "Lift and Shift." Migrating a workload to the cloud without code changes.', details: 'Benefits: Simplest and quickest migration method. Drawbacks: Doesn’t fully leverage cloud-native benefits and can make scaling difficult.' },
+            { name: 'Replatform', icon: '🔄', description: 'Also known as "Move and Improve." Migrating with some modifications.', details: 'Benefits: Allows use of cloud scalability, reliability, and cost-effectiveness. Drawbacks: Can be a complex and time-consuming process.' },
+            { name: 'Refactored', icon: '🛠️', description: 'Significantly changing the code to adopt a cloud-native architecture.', details: 'Benefits: Makes workloads more efficient, scalable, and secure. Drawbacks: A highly complex and time-consuming process.' },
+            { name: 'Reimagined', icon: '💡', description: 'Rethinking how technology achieves business goals.', details: 'The most transformative strategy. Often includes developing new cloud-native applications and leveraging AI/ML.' }
+        ],
+        computeOptions: {
+            vms: { title: 'Virtual Machines (VMs)', product: 'Compute Engine', icon: '💻', description: 'VMs virtualize physical hardware, providing a complete machine with its own OS. This offers maximum control and flexibility, ideal for migrating legacy applications.', features: ['Full OS control', 'Highly configurable (CPU, RAM)', 'Supports any workload', 'Sustained & committed-use discounts'] },
+            containers: { title: 'Containers', product: 'Google Kubernetes Engine (GKE)', icon: '📦', description: 'Containers virtualize the OS, packaging an application and its dependencies. They are lightweight, portable, and ideal for building microservices.', features: ['Lightweight & portable', 'Fast startup times', 'Consistent environments', 'Managed with Kubernetes'] },
+            serverless: { title: 'Serverless', product: 'Cloud Run, Cloud Functions', icon: '☁️', description: 'The highest level of abstraction. You only provide code or a container, and Google handles all infrastructure, scaling, and management automatically.', features: ['No server management', 'Pay only for what you use', 'Automatic scaling (to zero)', 'Event-driven capabilities'] }
+        },
+        quizScenarios: [
+            { scenario: "A multinational coffeehouse chain wants to build a new, globally scalable smartphone app for ordering, moving beyond their existing website and phone orders.", options: ["Rehost", "Replatform", "Refactor", "Reimagine"], answer: "Reimagine", explanation: "The organization is developing a completely new product (a mobile app) to create a new customer experience, rather than just updating an existing one. This is a fundamental rethinking of their business process." },
+            { scenario: "A video game manufacturer's legacy app on mobile consoles lacks modern features like cloud gaming. They need to integrate these new features into the existing application without risking extended downtime.", options: ["Rehost", "Replatform", "Refactor", "Reimagine"], answer: "Refactor", explanation: "The core application exists, but needs significant changes to its code to integrate new, complex features. Refactoring allows for this deep modification without starting from scratch." },
+            { scenario: "A financial services company has a legacy transaction application running on an outdated OS. They want to modernize it to run on new hardware without rewriting the entire application.", options: ["Rehost", "Replatform", "Refactor", "Reimagine"], answer: "Replatform", explanation: "The strategy involves making minor changes to the application to take advantage of the new operating system's features, without a full rewrite. This is a classic 'move and improve' case." },
+            { scenario: "A law firm has a large on-premises database of legal resources with a slow web portal. They want to make the database accessible quickly and easily from anywhere without application redevelopment.", options: ["Rehost", "Replatform", "Refactor", "Reimagine"], answer: "Rehost", explanation: "Application redevelopment is not required. The goal is to move the existing database to the cloud for better accessibility and performance, a straightforward 'lift and shift' migration." }
+        ],
+        generalQuiz: [
+            { question: "A travel company is developing a new app and wants to test it on various OS and hardware configurations. What should they use?", options: ["Containers", "A local environment", "Colocation", "Virtual machine instances"], answer: "Virtual machine instances", explanation: "VMs are ideal because they can create isolated environments with customizable operating systems and hardware settings, enabling comprehensive testing across different configurations." },
+            { question: "What portion of a machine does a container virtualize?", options: ["Software layers above the firmware level", "Software layers above the operating system level", "Hardware layers above the electrical level", "The entire machine"], answer: "Software layers above the operating system level", explanation: "Containers virtualize the software layers above the OS, allowing applications to run in isolated environments that share the same host OS kernel. VMs virtualize the entire machine." },
+            { question: "What open-source platform, originally from Google, manages containerized workloads and services?", options: ["TensorFlow", "Go", "Kubernetes", "Angular"], answer: "Kubernetes", explanation: "Kubernetes is the industry-standard open-source platform for container orchestration, providing features for deploying, scaling, and automating container-based applications." },
+            { question: "What term describes a set of instructions that lets different software programs communicate with each other?", options: ["Application programming interface", "Programming communication link", "Network programming interface", "Communication link interface"], answer: "Application programming interface", explanation: "An Application Programming Interface (API) defines a set of rules and specifications that allow different software programs to interact, acting as a contract between them." }
+        ]
+    };
+    
+    // Populate Strategies
+    const strategiesContainer = document.getElementById('strategies-container');
+    appData.strategies.forEach(strategy => {
+        const card = document.createElement('div');
+        card.className = 'strategy-card bg-white p-6 rounded-lg shadow-md cursor-pointer';
+        card.innerHTML = `
+            <div class="flex items-center mb-3">
+                <span class="text-3xl mr-4">${strategy.icon}</span>
+                <h3 class="text-xl font-bold">${strategy.name}</h3>
+            </div>
+            <p class="text-slate-600 mb-3">${strategy.description}</p>
+            <div class="details hidden text-sm text-slate-500 bg-slate-50 p-3 rounded-md">
+                ${strategy.details}
+            </div>
+        `;
+        strategiesContainer.appendChild(card);
+        card.addEventListener('click', () => card.querySelector('.details').classList.toggle('hidden'));
+    });
+
+    // Populate Compute Options
+    const computeTabsContainer = document.getElementById('compute-options-tabs');
+    const computeContentContainer = document.getElementById('compute-options-content');
+    Object.keys(appData.computeOptions).forEach((key, index) => {
+        const option = appData.computeOptions[key];
+        const tab = document.createElement('button');
+        tab.className = `px-4 py-2 font-semibold text-slate-500 border-b-2 transition-colors duration-300 ${index === 0 ? 'border-teal-500 text-teal-600' : 'border-transparent'}`;
+        tab.textContent = option.title;
+        tab.dataset.target = key;
+
+        const content = document.createElement('div');
+        content.id = key;
+        content.className = `bg-white p-6 rounded-xl shadow-lg ${index !== 0 ? 'hidden' : ''} col-span-1 md:col-span-2 lg:col-span-3`;
+        content.innerHTML = `
+            <div class="flex items-center mb-4">
+                <span class="text-5xl mr-4">${option.icon}</span>
+                <div>
+                    <h3 class="text-xl font-bold">${option.title}</h3>
+                    <p class="font-semibold text-teal-600">${option.product}</p>
+                </div>
+            </div>
+            <p class="text-slate-600 mb-4">${option.description}</p>
+            <ul class="space-y-2">
+                ${option.features.map(f => `<li class="flex items-start"><span class="text-teal-500 mr-2 mt-1">✓</span><span class="text-slate-600">${f}</span></li>`).join('')}
+            </ul>`;
+        
+        computeTabsContainer.appendChild(tab);
+        if(index === 0) computeContentContainer.appendChild(content);
+
+        tab.addEventListener('click', () => {
+            computeTabsContainer.querySelectorAll('button').forEach(t => t.classList.replace('border-teal-500', 'border-transparent') || t.classList.remove('text-teal-600'));
+            tab.classList.add('border-teal-500', 'text-teal-600');
+            computeContentContainer.innerHTML = '';
+            computeContentContainer.appendChild(content);
+        });
+    });
+
+    // Charts
+    const strategiesCtx = document.getElementById('strategies-chart').getContext('2d');
+    new Chart(strategiesCtx, { type: 'bar', data: { labels: ['Retained', 'Retired', 'Rehosted', 'Replatform', 'Refactored', 'Reimagined'], datasets: [{ label: 'Effort / Complexity', data: [1, 1, 3, 5, 8, 10], backgroundColor: 'rgba(20, 184, 166, 0.2)', borderColor: 'rgba(13, 148, 136, 1)', borderWidth: 1 }, { label: 'Cloud-Native Benefit', data: [0, 0, 2, 6, 9, 10], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(37, 99, 235, 1)', borderWidth: 1 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, scales: { x: { beginAtZero: true, title: { display: true, text: 'Relative Scale (1-10)' } } }, plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw}` } } } } });
+    const computeCtx = document.getElementById('compute-chart').getContext('2d');
+    new Chart(computeCtx, { type: 'bubble', data: { datasets: [{ label: 'Virtual Machines', data: [{x: 2, y: 9, r: 15}], backgroundColor: 'rgba(239, 68, 68, 0.6)' }, { label: 'Containers', data: [{x: 5, y: 6, r: 25}], backgroundColor: 'rgba(59, 130, 246, 0.6)' }, { label: 'Serverless', data: [{x: 9, y: 2, r: 20}], backgroundColor: 'rgba(16, 185, 129, 0.6)' }] }, options: { maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Level of Abstraction (Managed by Cloud)' }, min: 0, max: 10 }, y: { title: { display: true, text: 'Level of Control (Managed by User)' }, min: 0, max: 10 } }, plugins: { tooltip: { callbacks: { label: (c) => c.dataset.label } } } } });
+
+    // Generic Quiz Handler
+    function initializeQuiz(containerId, quizData, title) {
+        const container = document.getElementById(containerId);
+        let currentIndex = 0;
+
+        function loadQuestion() {
+            const item = quizData[currentIndex];
+            if (!item) return;
+
+            const questionText = item.scenario || item.question;
+
+            container.innerHTML = `
+                <div class="mb-4">
+                    <p class="text-sm font-semibold text-teal-600">${title.toUpperCase()} ${currentIndex + 1} / ${quizData.length}</p>
+                    <p class="text-lg text-slate-700 mt-1">${questionText}</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="${containerId}-options">
+                    ${item.options.map(opt => `<button class="quiz-option w-full text-left p-4 rounded-lg border-2 border-slate-200 hover:border-teal-400 hover:bg-teal-50">${opt}</button>`).join('')}
+                </div>
+                <div id="${containerId}-feedback" class="hidden mt-4 p-4 rounded-lg"></div>
+                <div class="mt-6 text-right">
+                    <button id="${containerId}-next" class="hidden bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition-colors">Next &rarr;</button>
+                </div>`;
+            
+            document.querySelectorAll(`#${containerId}-options button`).forEach(button => {
+                button.addEventListener('click', () => handleAnswer(button.textContent));
+            });
+        }
+
+        function handleAnswer(selectedOption) {
+            const item = quizData[currentIndex];
+            const feedbackEl = document.getElementById(`${containerId}-feedback`);
+            const optionsContainer = document.getElementById(`${containerId}-options`);
+            const nextButton = document.getElementById(`${containerId}-next`);
+            
+            optionsContainer.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === item.answer) btn.classList.add('bg-green-100', 'border-green-400');
+                if (btn.textContent === selectedOption && selectedOption !== item.answer) btn.classList.add('bg-red-100', 'border-red-400');
+            });
+
+            feedbackEl.className = `mt-4 p-4 rounded-lg ${selectedOption === item.answer ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`;
+            feedbackEl.innerHTML = `<strong>${selectedOption === item.answer ? 'Correct!' : `Not quite. The best answer is <strong>${item.answer}</strong>.`}</strong> ${item.explanation}`;
+            
+            feedbackEl.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+            
+            nextButton.addEventListener('click', () => {
+                currentIndex++;
+                if (currentIndex < quizData.length) {
+                    loadQuestion();
+                } else {
+                    container.innerHTML = `<div class="text-center p-8"><h3 class="text-2xl font-bold mb-4">Quiz Complete!</h3><p class="text-slate-600">You've finished this section. You can scroll to review other topics or try another quiz.</p></div>`;
+                }
+            }, { once: true });
+        }
+        loadQuestion();
+    }
+    
+    initializeQuiz('quiz-container', appData.quizScenarios, 'Scenario');
+    initializeQuiz('general-quiz-container', appData.generalQuiz, 'Question');
+
+    // Mobile Menu
+    document.getElementById('menu-btn').addEventListener('click', () => {
+        document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    // Active Nav Link on Scroll
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            if (pageYOffset >= section.offsetTop - 120) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active-nav');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active-nav');
+            }
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>
