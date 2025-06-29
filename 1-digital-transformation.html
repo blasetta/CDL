@@ -150,7 +150,6 @@
                         <div id="iaas-content" class="service-panel grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Infrastructure as a Service (IaaS)</h3><p class="mt-2 text-slate-600">Provides fundamental resources like virtual machines, storage, and networking. You lease the hardware, giving you maximum control over the operating system and software.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Leasing a car. You choose the car and drive it, but you don't own it. You are responsible for maintaining it.</p></div><div class="text-center"><span class="text-8xl">🚗</span></div></div>
                         <div id="paas-content" class="service-panel hidden grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Platform as a Service (PaaS)</h3><p class="mt-2 text-slate-600">Offers a complete development and deployment environment. You manage your application and data, while the provider manages the underlying infrastructure.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Taking a taxi. You provide the destination (your code), but you don't do the driving or maintain the vehicle.</p></div><div class="text-center"><span class="text-8xl">🚕</span></div></div>
                         <div id="saas-content" class="service-panel hidden grid md:grid-cols-2 gap-8 items-center"><div><h3 class="text-2xl font-bold text-slate-800">Software as a Service (SaaS)</h3><p class="mt-2 text-slate-600">Delivers a complete, ready-to-use application over the web. The provider manages everything; you simply use the software.</p><p class="mt-4 font-semibold text-slate-700">Analogy: Taking a bus. You share a ride that follows a predefined route. It's convenient but offers the least customization.</p></div><div class="text-center"><span class="text-8xl">🚌</span></div></div>
-                        <div class="mt-8 text-center"><button id="use-case-btn" class="bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">✨ Generate Use Cases</button></div>
                         <div id="use-case-output" class="mt-6 p-6 bg-slate-100 rounded-lg min-h-[100px] whitespace-pre-wrap"></div>
                     </div>
                 </div>
@@ -185,20 +184,7 @@
             </div>
         </section>
 
-        <!-- Section 5: Cloud Strategy Advisor -->
-        <section id="advisor" class="py-16 sm:py-24">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold tracking-tight text-slate-900">✨ Cloud Strategy Advisor</h2>
-                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">Describe your business or project scenario below, and our AI advisor will recommend a suitable cloud strategy based on the concepts in this report.</p>
-                </div>
-                <div class="mt-12 max-w-2xl mx-auto">
-                    <textarea id="scenario-input" rows="4" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="e.g., We are a healthcare startup building a patient portal. We need high security, HIPAA compliance, and the ability to scale quickly during enrollment periods."></textarea>
-                    <button id="advisor-btn" class="mt-4 w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">Get Recommendation</button>
-                    <div id="advisor-output" class="mt-6 p-6 bg-white rounded-lg shadow-sm min-h-[150px] whitespace-pre-wrap"></div>
-                </div>
-            </div>
-        </section>
+        
 
         <!-- Section 6: Quiz -->
         <section id="quiz" class="py-16 sm:py-24 bg-white">
@@ -242,11 +228,7 @@
 
     </main>
     
-    <footer class="bg-slate-800">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-slate-400 text-sm">
-            <p>This interactive report is based on "Digital Transformation with Google Cloud" learning materials. AI features powered by Gemini.</p>
-        </div>
-    </footer>
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
