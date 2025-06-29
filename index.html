@@ -1,197 +1,47 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Cloud Digital Leader Program</title>
-    <!-- Chosen Palette: Warm Neutrals (Stone/Slate with Blue Accents) -->
-    <!-- Application Structure Plan: The application uses a single-page, vertical scroll layout with a sticky navigation header. The core content is organized into six interactive "competency cards". This structure was chosen over a simple text layout to encourage user engagement. By clicking a card, the user actively seeks information, which improves retention. The cards are arranged around a central "Learning Pathway" visual, which frames the modules as a cohesive journey rather than isolated topics, reinforcing the concept of progressive skill-building. This interactive, guided-path structure makes the content more intuitive and compelling for prospective learners. -->
-    <!-- Visualization & Content Choices: Report Info: Six modules, each with a 'challenge' and 'advantage'. Goal: Inform and Organize. Viz/Presentation Method: Interactive flip cards for each module and a central, non-data "Learning Pathway" diagram built with HTML/CSS. Interaction: Clicking a card flips it to reveal details. Clicking a nav link or pathway node scrolls to the relevant section. Justification: Since the source data is qualitative, traditional charts are unsuitable. The interactive cards break down information into digestible chunks, preventing user overload. The pathway diagram provides a visual metaphor for the learning journey, which is more effective for this type of content than a list or table. Library/Method: Vanilla JS for interactions, Tailwind CSS for styling. -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import "tailwindcss";
-    </style>
-    <link rel="preconnect" href="https://rsms.me/">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <link href="/dist/output.css" rel="stylesheet">
-</head>
-<body class="bg-stone-50 text-stone-800">
 
-    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg shadow-sm">
-        <nav class="container mx-auto px-6 py-3">
-            <ul id="nav-menu" class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 md:gap-x-8">
-            </ul>
-        </nav>
-    </header>
-
-    <main class="container mx-auto px-6 py-12 md:py-20">
-        <section id="intro" class="text-center mb-16 md:mb-24">
-            <h1 class="text-4xl md:text-5xl font-bold text-blue-900 mb-4">Google Cloud Digital Leader Program</h1>
-            <p class="max-w-3xl mx-auto text-lg md:text-xl text-stone-600">
-                This training functions as a strategic guide for leveraging cloud capabilities to generate tangible business outcomes. We progress beyond a foundational understanding of cloud computing to achieve a mastery of the principles and methodologies through which it drives business success.
-            </p>
-        </section>
-
-        <section id="pathway" class="mb-16 md:mb-24">
-             <h2 class="text-3xl font-bold text-center text-blue-900 mb-8">Program Modules</h2>
-             <ul class="list-disc list-inside text-lg text-stone-600 text-center mb-12 max-w-2xl mx-auto space-y-2">
-                <li><a href="/1-digital-transformation.html" class="text-blue-600 hover:underline">Digital Transformation</a></li>
-                <li><a href="/2-data.html" class="text-blue-600 hover:underline">Data Transformation</a></li>
-                <li><a href="/3-ml.html" class="text-blue-600 hover:underline">Applied Machine Learning</a></li>
-                <li><a href="/4-migration.html" class="text-blue-600 hover:underline">Infrastucture and Modernization</a></li>
-                <li><a href="/5-Security.html" class="text-blue-600 hover:underline">Security</a></li>
-                <li><a href="/6-Control.html" class="text-blue-600 hover:underline">Financial Operation Governance</a></li>
-             </ul>
-
-            <div id="core-competencies" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-            </div>
-        </section>
-
-        <footer class="text-center mt-16 md:mt-24 pt-8 border-t border-stone-200">
-            <p class="text-stone-500">An interactive guide to the Google Cloud Digital Leader Program.</p>
-        </footer>
-
-    </main>
-
-    <script>
-        const competencies = [
-            {
-                id: 'module1',
-                title: 'Module 1: Strategic Cloud Adoption',
-                icon: '☁️',
-                challenge: 'The initial challenge involves shifting perspective from conventional infrastructure to a cloud-native mindset.',
-                advantage: 'The advantage gained is the capacity to critically assess various cloud models and formulate a compelling business case for digital transformation that aligns technological initiatives with central strategic objectives.'
-            },
-            {
-                id: 'module2',
-                title: 'Module 2: Data Transformation & Analytics',
-                icon: '📊',
-                challenge: 'A common business challenge is the conversion of vast, often siloed, data repositories into actionable intelligence.',
-                advantage: 'The resulting advantage is the proficiency in utilizing Google Cloud\'s data management solutions to support informed decision-making, forecast trends, and identify new opportunities for revenue generation.'
-            },
-            {
-                id: 'module3',
-                title: 'Module 3: Applied Artificial Intelligence',
-                icon: '🤖',
-                challenge: 'The fields of Artificial Intelligence (AI) and Machine Learning (ML) can present considerable complexity. The challenge lies in discerning practical, high-value applications from theoretical concepts.',
-                advantage: 'Participants will acquire a significant advantage: the ability to identify strategic opportunities for implementing Google\'s AI/ML solutions to enhance customer experiences and automate intricate processes.'
-            },
-            {
-                id: 'module4',
-                title: 'Module 4: Infrastructure & Application Modernization',
-                icon: '🏗️',
-                challenge: 'The modernization of legacy infrastructure represents a substantial undertaking. The inherent challenge is to manage the complexities associated with migration and application updates while ensuring operational continuity.',
-                advantage: 'The advantage conferred is the ability to lead such initiatives confidently, fostering a more scalable, agile, and resilient organizational structure capable of rapid response to market dynamics.'
-            },
-            {
-                id: 'module5',
-                title: 'Module 5: Security, Trust & Compliance',
-                icon: '🛡️',
-                challenge: 'In the digital economy, stakeholder trust is a paramount asset. The challenge is to safeguard digital assets and sensitive data within an increasingly sophisticated threat environment.',
-                advantage: 'Participants will gain the advantage of understanding and utilizing Google\'s trusted infrastructure to architect secure, compliant, and resilient solutions, thereby reinforcing customer and stakeholder confidence.'
-            },
-            {
-                id: 'module6',
-                title: 'Module 6: Cloud Financial & Operational Governance',
-                icon: '⚙️',
-                challenge: 'While cloud platforms offer substantial capabilities, their associated expenditures can escalate without rigorous oversight. The final challenge is to master the principles of financial and operational governance for cloud resources.',
-                advantage: 'The crucial advantage achieved is the ability to optimize costs, maximize return on investment, and foster a culture of operational excellence and sustainability.'
-            }
-        ];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const navMenu = document.getElementById('nav-menu');
-            // Remove the following lines to disable the interactive cards and their associated JavaScript
-            const competenciesContainer = document.getElementById('core-competencies');
-
-            competencies.forEach(comp => {
-                const navItem = document.createElement('li');
-                navItem.innerHTML = `<a href="#${comp.id}" class="nav-link text-stone-600 hover:text-blue-600 transition-colors duration-300 text-sm md:text-base">${comp.title}</a>`;
-                navMenu.appendChild(navItem);
-
-                const cardContainer = document.createElement('div');
-                cardContainer.id = comp.id;
-                cardContainer.className = 'perspective h-80';
-                cardContainer.innerHTML = `
-                    <div class="card relative w-full h-full cursor-pointer">
-                        <div class="card-inner">`;
-                
-                let linkHref = '';
-                switch(comp.id) {
-                    case 'module1':
-                        linkHref = '1-digital-transformation.html';
-                        break;
-                    case 'module2':
-                        linkHref = '2-data.html';
-                        break;
-                    case 'module3':
-                        linkHref = '3-ml.html';
-                        break;
-                    case 'module4':
-                        linkHref = '4-migration.html';
-                        break;
-                    case 'module5':
-                        linkHref = '5-Security.html';
-                        break;
-                    case 'module6':
-                        linkHref = '6-Control.html';
-                        break;
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Google Cloud Digital Leader Program</title>
+            <!-- Tailwind CSS CDN for styling -->
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+            <style>
+                body {
+                    font-family: 'Inter', sans-serif; /* Using Inter font */
                 }
-                cardContainer.innerHTML += `
-                            <div class="card-face card-front bg-white rounded-xl shadow-lg border border-stone-200 p-6 flex flex-col justify-center items-center text-center">
-                                <a href="${linkHref}" target="_blank" class="flex flex-col justify-center items-center text-center w-full h-full no-underline text-current">
-                                    <div class="text-5xl mb-4">${comp.icon}</div>
-                                    <h3 class="text-xl font-bold text-blue-900">${comp.title}</h3>
-                                    <p class="text-stone-500 mt-2 text-sm">Click to reveal details</p>
-                                </a>
-                            </div>
-                            <div class="card-face card-back bg-blue-900 text-white rounded-xl shadow-xl p-6 overflow-y-auto cursor-default">
-                                <div class="w-full">
-                                    <h4 class="font-bold text-lg mb-2 text-blue-200">Challenge:</h4>
-                                    <p class="text-sm mb-4 text-blue-100">${comp.challenge}</p>
-                                    <h4 class="font-bold text-lg mb-2 text-blue-200">Advantage:</h4>
-                                    <p class="text-sm text-blue-100">${comp.advantage}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                competenciesContainer.appendChild(cardContainer);
-            });
-
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                card.addEventListener('click', () => {
-                    card.classList.toggle('is-flipped');
-                });
-            });
-            
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = competencies.map(c => document.getElementById(c.id));
-
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.6 
-            };
-
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href').substring(1) === entry.target.id) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }, observerOptions);
-
-            sections.forEach(section => {
-                observer.observe(section);
-            });
-        });
-    </script>
-</body>
-</html>
+            </style>
+        </head>
+        <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Google Cloud Digital Leader Program</h1>
+        
+                <nav class="space-y-4">
+                    <a href="1-digital-transformation.html" class="block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Digital Transformation
+                    </a>
+                    <a href="2-data.html" class="block bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Data Transformation 
+                    </a>
+                    <a href="3-ml.html" class="block bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Applied Machine Learning
+                    </a>
+                    <a href="4-migration.html" class="block bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Infrastucture and Modernization
+                    </a>
+                    <a href="5-Security.html" class="block bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Security 
+                    </a>
+                    <a href="6-Control.html" class="block bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                     Financial Operation Governance
+                    </a>
+                    <!-- Add more links for additional pages here -->
+                </nav>
+        
+                
+            </div>
+        </body>
+        </html>
+        
