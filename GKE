@@ -157,7 +157,7 @@
             <p class="mb-8 text-lg text-slate-600">Explore practical YAML configurations for common and advanced workload patterns on GKE, from AI models to standard web applications.</p>
             
             <div class="my-8">
-                 <img src="https://storage.googleapis.com/gweb-cloud-blog-publish/images/GKE_powering_AI_innovation.max-2500x2500.jpg" 
+                 <img src="GKE_powering.jpg" 
                       alt="A graphic stating 'How GKE is powering AI innovation' with the Google Cloud Next '25 logo." 
                       class="w-full max-w-4xl mx-auto rounded-xl shadow-lg"
                       onerror="this.onerror=null;this.src='https://placehold.co/1200x675/e0e7ff/4f46e5?text=GKE+Powering+AI+Innovation';">
