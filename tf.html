@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Terraform</title>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page, multi-section dashboard. This thematic structure allows users to explore core Terraform concepts (Workflow, Language, Modules, State) in a non-linear fashion, which is more engaging than a simple document. A sticky top navigation facilitates easy movement between these conceptual areas. The primary goal is to transform dense PDF content into an interactive learning experience. For instance, the complex `init-plan-apply` workflow is broken down into a clickable, step-by-step visual diagram. This structure was chosen over a direct report-to-page conversion to prioritize user engagement and comprehension, making abstract concepts like 'state' or 'modules' more tangible through interactive comparisons and diagrams. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core Terraform workflow -> Goal: Inform/Organize -> Viz: Interactive step diagram (HTML/CSS) -> Interaction: Click steps to reveal explanations/CLI output -> Justification: Simplifies a key process.
+        - Report Info: HCL Syntax (Resources, Variables, Outputs) -> Goal: Inform/Compare -> Viz: Tabbed code viewer (HTML/JS) -> Interaction: Click tabs/buttons to switch code snippets -> Justification: Allows focused learning and easy comparison.
+        - Report Info: Local vs. Remote State -> Goal: Compare -> Viz: Bar chart (Chart.js) + feature list -> Interaction: Chart visualizes abstract pros/cons like 'Security' and 'Collaboration' -> Justification: Makes benefits of remote state clear and impactful.
+        - Report Info: Modules concept -> Goal: Organize/Relationships -> Viz: Diagrammatic layout (HTML/CSS) -> Interaction: Hover effects to show data flow between root and child -> Justification: Clarifies the abstract concept of encapsulation.
+        - Report Info: Terraform concepts overview -> Goal: Inform -> Viz: Doughnut chart (Chart.js) -> Interaction: Hover to see details -> Justification: Provides a high-level summary of the tool's components.
+        - Library/Method: All interactions are powered by vanilla JavaScript for simplicity and performance. All charts use Chart.js on a <canvas> element.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F5F2;
+            color: #374151;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .section-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .terminal {
+            background-color: #1E293B;
+            color: #E2E8F0;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .tab-button {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-button.active {
+            background-color: #3B82F6;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-gray-800">Terraform Interactive Guide</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Introduction</a>
+                        <a href="#workflow" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Workflow</a>
+                        <a href="#language" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Language</a>
+                        <a href="#modules" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Modules</a>
+                        <a href="#state" class="nav-link px-3 py-2 rounded-md text-sm font-medium">State</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <section id="introduction" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-4">What is Terraform?</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-8">This application provides an interactive journey through the core concepts of Terraform, a tool for building, changing, and versioning infrastructure safely and efficiently. We'll translate the key ideas from traditional documentation into dynamic, explorable visualizations and examples.</p>
+            <div class="section-card p-6 md:p-8 grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3">The Power of Infrastructure as Code (IaC)</h3>
+                    <p class="mb-4 text-gray-700">Instead of manual setup, IaC lets you manage infrastructure using configuration files. Terraform is a premier IaC tool that uses a declarative approach: you define the desired **end state**, and Terraform determines how to achieve it.</p>
+                    <ul class="space-y-2">
+                        <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">&#10004;</span> <strong>Automation & Consistency:</strong> Build identical environments every time, reducing human error.</li>
+                        <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">&#10004;</span> <strong>Version Control:</strong> Track infrastructure changes just like application code using Git.</li>
+                        <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">&#10004;</span> <strong>Reusability:</strong> Create modular components to accelerate and standardize deployments.</li>
+                    </ul>
+                </div>
+                <div class="chart-container">
+                    <canvas id="conceptsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">The Core Terraform Workflow</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-8">Terraform operates in a simple, predictable cycle. This interactive diagram breaks down the fundamental `init`, `plan`, and `apply` steps. Click on each step to see what it does and view sample output.</p>
+            <div class="section-card p-6 md:p-8">
+                <div class="flex flex-col md:flex-row justify-around items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="step-init" class="workflow-step active flex items-center space-x-2 p-3 bg-blue-500 text-white rounded-lg shadow-md">
+                        <span class="text-xl">&#128229;</span><span>1. Init</span>
+                    </button>
+                    <div class="text-gray-400 text-2xl hidden md:block">&rarr;</div>
+                    <button id="step-plan" class="workflow-step flex items-center space-x-2 p-3 bg-white rounded-lg shadow-md">
+                        <span class="text-xl">&#128220;</span><span>2. Plan</span>
+                    </button>
+                    <div class="text-gray-400 text-2xl hidden md:block">&rarr;</div>
+                    <button id="step-apply" class="workflow-step flex items-center space-x-2 p-3 bg-white rounded-lg shadow-md">
+                        <span class="text-xl">&#128640;</span><span>3. Apply</span>
+                    </button>
+                </div>
+                <div id="workflow-details" class="mt-6 bg-gray-50 p-6 rounded-lg">
+                    <h3 id="workflow-title" class="text-2xl font-semibold mb-2"></h3>
+                    <p id="workflow-description" class="text-gray-700 mb-4"></p>
+                    <div id="workflow-output" class="terminal"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="language" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">The HCL Language Basics</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-8">Terraform configurations are written in HashiCorp Configuration Language (HCL). Explore the three main building blocks: Resources, Variables, and Outputs. Use the tabs to switch between concepts and see example code.</p>
+            <div class="section-card p-6 md:p-8">
+                <div class="flex justify-center mb-6">
+                    <div class="flex space-x-1 bg-gray-200 rounded-lg p-1">
+                        <button class="hcl-tab tab-button active px-4 py-2 text-sm font-medium rounded-md" data-tab="resources">Resources</button>
+                        <button class="hcl-tab tab-button px-4 py-2 text-sm font-medium rounded-md" data-tab="variables">Variables</button>
+                        <button class="hcl-tab tab-button px-4 py-2 text-sm font-medium rounded-md" data-tab="outputs">Outputs</button>
+                    </div>
+                </div>
+                <div id="hcl-content" class="grid md:grid-cols-2 gap-8 items-start">
+                    <div id="hcl-explanation">
+                        <h3 id="hcl-title" class="text-2xl font-semibold mb-2"></h3>
+                        <p id="hcl-description" class="text-gray-700"></p>
+                    </div>
+                    <div class="terminal" id="hcl-code"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="modules" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Organizing with Modules</h2>
+             <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-8">Modules are containers for multiple resources that are used together. They are the primary way to package and reuse resource configurations, promoting a DRY (Don't Repeat Yourself) approach to IaC.</p>
+            <div class="section-card p-6 md:p-8 flex flex-col lg:flex-row gap-8">
+                <div class="flex-1">
+                    <h3 class="text-2xl font-semibold mb-3">Without Modules: Repetitive Code</h3>
+                    <p class="text-gray-600 mb-4">Managing multiple environments (like dev and prod) by copying and pasting code is error-prone and difficult to maintain.</p>
+                    <div class="space-y-2">
+                        <div class="terminal text-sm">
+                            <span class="text-gray-400"># dev/main.tf</span><br>
+                            resource "google_compute_instance" "dev_server" { ... }<br>
+                            resource "google_compute_disk" "dev_disk" { ... }
+                        </div>
+                        <div class="terminal text-sm">
+                            <span class="text-gray-400"># prod/main.tf</span><br>
+                            resource "google_compute_instance" "prod_server" { ... }<br>
+                            resource "google_compute_disk" "prod_disk" { ... }
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-600">With Modules: Reusable & Clean</h3>
+                    <p class="text-gray-600 mb-4">A module encapsulates the server configuration. The root configuration calls this module for each environment, passing in specific variables.</p>
+                    <div class="space-y-2">
+                         <div class="terminal text-sm">
+                            <span class="text-gray-400"># modules/web_server/main.tf</span><br>
+                            resource "google_compute_instance" "main" {<br>
+                            &nbsp;&nbsp;name = var.instance_name<br>
+                            }
+                        </div>
+                        <div class="terminal text-sm">
+                            <span class="text-gray-400"># main.tf</span><br>
+                            module "dev_server" {<br>
+                            &nbsp;&nbsp;source = "./modules/web_server"<br>
+                            &nbsp;&nbsp;instance_name = "dev-vm"<br>
+                            }<br>
+                             module "prod_server" {<br>
+                            &nbsp;&nbsp;source = "./modules/web_server"<br>
+                            &nbsp;&nbsp;instance_name = "prod-vm"<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="state">
+            <h2 class="text-3xl font-bold text-center mb-8">Understanding Terraform State</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-8">Terraform state is a crucial file that maps your configuration to real-world resources. Managing it correctly is key, especially in team environments. Storing state remotely is the best practice.</p>
+            <div class="section-card p-6 md:p-8 grid md:grid-cols-2 gap-8 items-center">
+                 <div>
+                    <h3 class="text-2xl font-semibold mb-3">Local vs. Remote State</h3>
+                    <p class="mb-4 text-gray-700">By default, state is stored in a local `terraform.tfstate` file, which is not suitable for teams. Remote state provides a centralized, secure, and lockable location for your state file.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center"><span class="text-red-500 mr-3 text-lg">&#10060;</span><div><strong>Local State:</strong> Prone to conflicts, data loss, and security risks.</div></li>
+                        <li class="flex items-center"><span class="text-green-500 mr-3 text-lg">&#10004;</span><div><strong>Remote State (e.g., GCS):</strong> Enables collaboration, prevents corruption with state locking, and secures sensitive data.</div></li>
+                    </ul>
+                </div>
+                <div class="chart-container">
+                    <canvas id="stateChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const workflowData = {
+                init: {
+                    title: '1. Initialize (`terraform init`)',
+                    description: 'This command prepares your working directory. It downloads the necessary provider plugins (like the Google Cloud provider) and any modules referenced in your configuration. You only need to run this once per project, or when you add a new provider or module.',
+                    output: `
+$ terraform init
+
+Initializing the backend...
+Initializing provider plugins...
+- Finding latest version of hashicorp/google...
+- Installing hashicorp/google v4.40.0...
+- Installed hashicorp/google v4.40.0 (signed by HashiCorp)
+
+Terraform has been successfully initialized!
+                    `
+                },
+                plan: {
+                    title: '2. Plan (`terraform plan`)',
+                    description: 'Terraform creates an execution plan. It compares your configuration to the current state and determines what changes are needed to reach your desired state. It\'s a dry run – nothing is changed in your actual infrastructure.',
+                    output: `
+$ terraform plan
+
+Terraform will perform the following actions:
+
+  # google_compute_network.vpc_network will be created
+  + resource "google_compute_network" "vpc_network" {
+      + name                        = "terraform-network"
+      + project                     = "my-gcp-project"
+      + auto_create_subnetworks     = false
+      + id                          = (known after apply)
+      + gateway_ipv4                = (known after apply)
+      + self_link                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+                    `
+                },
+                apply: {
+                    title: '3. Apply (`terraform apply`)',
+                    description: 'This command executes the plan. Terraform communicates with the cloud provider\'s API to create, update, or delete resources as outlined in the plan. It will ask for confirmation before proceeding.',
+                    output: `
+$ terraform apply
+
+google_compute_network.vpc_network: Creating...
+google_compute_network.vpc_network: Creation complete after 5s [id=projects/my-gcp-project/global/networks/terraform-network]
+
+Apply complete! Resources: 1 added, 0 to change, 0 to destroy.
+                    `
+                }
+            };
+
+            const hclData = {
+                resources: {
+                    title: 'Resources',
+                    description: 'Resources are the most basic element in Terraform. They describe an infrastructure object, such as a virtual machine, a storage bucket, or a DNS record. A resource block declares a resource of a given type ("google_compute_network") with a given local name ("main").',
+                    code: `
+resource "google_compute_network" "main" {
+  name                    = "my-network"
+  auto_create_subnetworks = true
+}
+
+resource "google_storage_bucket" "data" {
+  name     = "my-unique-data-bucket"
+  location = "US"
+  force_destroy = true
+}`
+                },
+                variables: {
+                    title: 'Input Variables',
+                    description: 'Variables parameterize your configuration, making it reusable and flexible. You declare variables in a `variable` block and can provide values through `.tfvars` files or on the command line. This avoids hardcoding values like project IDs or region names.',
+                    code: `
+variable "project_id" {
+  type        = string
+  description = "The ID of the Google Cloud project."
+}
+
+variable "region" {
+  type        = string
+  description = "The region to deploy resources in."
+  default     = "us-central1"
+}
+
+# Use the variable
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}`
+                },
+                outputs: {
+                    title: 'Output Values',
+                    description: 'Outputs are like return values for your configuration. They expose information about the resources you\'ve created, which can be useful for connecting different parts of your infrastructure or for providing information to the user after an `apply` is complete.',
+                    code: `
+resource "google_compute_instance" "vm" {
+  name         = "my-vm"
+  machine_type = "e2-medium"
+  zone         = "us-central1-a"
+  # ... other config
+}
+
+output "instance_ip" {
+  description = "The public IP address of the VM."
+  value       = google_compute_instance.vm.network_interface[0].access_config[0].nat_ip
+}`
+                }
+            };
+            
+            const workflowSteps = document.querySelectorAll('.workflow-step');
+            const workflowTitle = document.getElementById('workflow-title');
+            const workflowDescription = document.getElementById('workflow-description');
+            const workflowOutput = document.getElementById('workflow-output');
+
+            function updateWorkflowContent(step) {
+                const data = workflowData[step];
+                workflowTitle.textContent = data.title;
+                workflowDescription.textContent = data.description;
+                workflowOutput.textContent = data.output.trim();
+
+                workflowSteps.forEach(btn => {
+                    btn.classList.remove('bg-blue-500', 'text-white');
+                    btn.classList.add('bg-white');
+                });
+                document.getElementById(`step-${step}`).classList.add('bg-blue-500', 'text-white');
+                document.getElementById(`step-${step}`).classList.remove('bg-white');
+            }
+
+            workflowSteps.forEach(button => {
+                button.addEventListener('click', () => {
+                    const step = button.id.replace('step-', '');
+                    updateWorkflowContent(step);
+                });
+            });
+
+            updateWorkflowContent('init');
+            
+            const hclTabs = document.querySelectorAll('.hcl-tab');
+            const hclTitle = document.getElementById('hcl-title');
+            const hclDescription = document.getElementById('hcl-description');
+            const hclCode = document.getElementById('hcl-code');
+
+            function updateHclContent(tab) {
+                const data = hclData[tab];
+                hclTitle.textContent = data.title;
+                hclDescription.textContent = data.description;
+                hclCode.textContent = data.code.trim();
+                 hclTabs.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`.hcl-tab[data-tab="${tab}"]`).classList.add('active');
+            }
+
+            hclTabs.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateHclContent(button.dataset.tab);
+                });
+            });
+
+            updateHclContent('resources');
+
+            const conceptsCtx = document.getElementById('conceptsChart').getContext('2d');
+            new Chart(conceptsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Resources', 'Variables', 'Modules', 'State', 'Providers'],
+                    datasets: [{
+                        label: 'Key Concepts',
+                        data: [40, 15, 20, 15, 10],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(249, 115, 22, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderColor: '#F8F5F2',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Terraform Core Components'
+                        }
+                    }
+                }
+            });
+
+            const stateCtx = document.getElementById('stateChart').getContext('2d');
+            new Chart(stateCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Collaboration', 'Security', 'Consistency', 'Durability'],
+                    datasets: [{
+                        label: 'Local State',
+                        data: [2, 3, 4, 2],
+                        backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Remote State',
+                        data: [9, 8, 9, 10],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: 'Effectiveness Score (out of 10)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'State Management Effectiveness'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
