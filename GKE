@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Kubernetes & GKE Explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: "Calm Harmony" - A light neutral background (slate-50), dark text (slate-800), and a subtle indigo accent.
+    Application Structure Plan: A single-page application with a fixed sidebar for navigation and a main content area. This structure logically segments the dense report into interactive modules: Introduction, Core Concepts, Architecture, Workload Patterns, GKE Deep Dive, Operations/CLI, and Scalability. This thematic approach allows users to explore topics non-linearly, enhancing usability and comprehension by moving from foundational knowledge to practical application. A new "Configuration Examples" section is added to provide practical, in-depth use cases.
+    Visualization & Content Choices: 
+    - Introduction (Goal: Inform): HTML/CSS timeline. Interaction: Hover effects. Justification: Visually represents the evolution of deployment technologies.
+    - Architecture (Goal: Relationships): Interactive HTML/CSS diagram. Interaction: Click on components to display info. Justification: Makes the complex relationship between Control Plane and Node components tangible and easy to explore.
+    - Workload Patterns (Goal: Compare): Tabbed interface with code blocks. Interaction: Click tabs to switch, copy button for YAML. Justification: Allows for easy comparison of different workload types and their configurations.
+    - Configuration Examples (Goal: Inform/Teach): Tabbed interface for complex examples. Interaction: Click tabs, copy code. Justification: Organizes detailed, multi-part examples into a consumable format.
+    - Operations CLI (Goal: Teach): Simulated terminal. Interaction: Click command buttons to see simulated output. Justification: Provides a safe, interactive way to learn essential `kubectl` commands without a live cluster.
+    - Scalability (Goal: Change): Interactive Chart.js bar chart. Interaction: Slider to change CPU load and see HPA in action. Justification: Dynamically visualizes the abstract concept of autoscaling.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .nav-link { transition: all 0.2s ease-in-out; }
+        .nav-link.active { background-color: #eef2ff; color: #4338ca; border-left-color: #4f46e5; }
+        .component { transition: all 0.2s ease-in-out; cursor: pointer; border: 2px solid transparent; }
+        .component.active { background-color: #e0e7ff; border-color: #6366f1; }
+        .terminal-output { white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; }
+        .code-block { background-color: #1f2937; color: #d1d5db; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; position: relative; }
+        .copy-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4b5563; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; }
+        .copy-btn:hover { background-color: #6b7280; }
+        .chart-container { position: relative; height: 300px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; max-height: 400px; }
+         @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .tab-button { transition: all 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-slate-200 p-4 fixed h-full flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Kubernetes_logo_without_workmark.svg/240px-Kubernetes_logo_without_workmark.svg.png" 
+                 alt="Kubernetes Logo" 
+                 class="h-10 w-10"
+                 onerror="this.onerror=null;this.src='https://placehold.co/40x40/eef2ff/4338ca?text=K8s';">
+            <h1 class="text-xl font-bold text-indigo-700">K8s & GKE Guide</h1>
+        </div>
+        <nav class="flex flex-col space-y-2">
+            <a href="#introduction" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Introduction</a>
+            <a href="#concepts" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Core Concepts</a>
+            <a href="#architecture" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">K8s Architecture</a>
+            <a href="#workloads" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Workload Patterns</a>
+            <a href="#examples" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Configuration Examples</a>
+            <a href="#gke" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">GKE Deep Dive</a>
+            <a href="#operations" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Operations & CLI</a>
+            <a href="#scalability" class="nav-link p-3 rounded-lg border-l-4 border-transparent font-medium text-slate-600 hover:bg-slate-100">Scalability</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 flex-1 p-6 md:p-10">
+        
+        <!-- Introduction Section -->
+        <section id="introduction" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">The Evolution of Application Deployment</h2>
+            <p class="mb-8 text-lg text-slate-600">This application provides an interactive guide to the core concepts of Kubernetes and GKE. We'll explore the journey from physical servers to modern container orchestration, making complex topics easy to understand. Navigate through the sections on the left to begin.</p>
+            <div class="space-y-6">
+                <div class="p-6 bg-white rounded-xl shadow-sm">
+                    <h3 class="font-bold text-xl mb-2 text-indigo-700">Physical Servers</h3>
+                    <p>The original model: one application per physical machine. This approach was simple but inefficient, leading to wasted resources and slow deployment times.</p>
+                </div>
+                <div class="text-center text-slate-400">▼</div>
+                <div class="p-6 bg-white rounded-xl shadow-sm">
+                    <h3 class="font-bold text-xl mb-2 text-indigo-700">Virtualization (VMs)</h3>
+                    <p>Hypervisors allowed multiple Virtual Machines, each with its own OS, to run on a single physical server. This improved resource utilization but still carried the overhead of a full OS for each application.</p>
+                </div>
+                <div class="text-center text-slate-400">▼</div>
+                <div class="p-6 bg-white rounded-xl shadow-sm">
+                    <h3 class="font-bold text-xl mb-2 text-indigo-700">Containers</h3>
+                    <p>A leap forward in efficiency. Containers virtualize the OS user space, packaging an application and its dependencies together. They are lightweight, portable, and share the host OS kernel.</p>
+                </div>
+                <div class="text-center text-slate-400">▼</div>
+                 <div class="p-6 bg-white rounded-xl shadow-sm">
+                    <h3 class="font-bold text-xl mb-2 text-indigo-700">Kubernetes & GKE</h3>
+                    <p>As container usage exploded, a new challenge emerged: managing them at scale. Kubernetes automates the deployment, scaling, and operation of containerized applications. GKE provides this as a managed, production-ready service on Google Cloud.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Concepts Section -->
+        <section id="concepts" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">Core Kubernetes Concepts</h2>
+            <p class="mb-8 text-lg text-slate-600">Kubernetes uses a set of objects to represent the state of your cluster. Here are the most fundamental building blocks you'll encounter. Click on a card to learn more.</p>
+            <div id="concepts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">Kubernetes Architecture</h2>
+            <p class="mb-8 text-lg text-slate-600">A Kubernetes cluster consists of a Control Plane (the brain) and multiple Nodes (the workers). Click on any component in the diagram below to see its role.</p>
+            <div class="lg:flex lg:space-x-8">
+                <div class="flex-1">
+                    <div class="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
+                        <h3 class="text-center font-bold text-xl mb-4">Cluster</h3>
+                        <div class="md:flex md:space-x-4">
+                            <!-- Control Plane -->
+                            <div class="flex-1 bg-indigo-50 p-4 rounded-lg border-2 border-dashed border-indigo-200 mb-4 md:mb-0">
+                                <h4 class="text-center font-semibold text-lg text-indigo-800 mb-4">Control Plane</h4>
+                                <div class="space-y-3">
+                                    <div id="kube-apiserver" class="component bg-indigo-100 p-3 rounded-md text-center">kube-apiserver</div>
+                                    <div id="etcd" class="component bg-indigo-100 p-3 rounded-md text-center">etcd</div>
+                                    <div id="kube-scheduler" class="component bg-indigo-100 p-3 rounded-md text-center">kube-scheduler</div>
+                                    <div id="kube-controller-manager" class="component bg-indigo-100 p-3 rounded-md text-center">kube-controller-manager</div>
+                                </div>
+                            </div>
+                            <!-- Nodes -->
+                            <div class="flex-1 bg-slate-50 p-4 rounded-lg border-2 border-dashed border-slate-200">
+                                <h4 class="text-center font-semibold text-lg text-slate-700 mb-4">Node</h4>
+                                <div class="space-y-3">
+                                    <div id="kubelet" class="component bg-slate-200 p-3 rounded-md text-center">kubelet</div>
+                                    <div id="kube-proxy" class="component bg-slate-200 p-3 rounded-md text-center">kube-proxy</div>
+                                    <div class="bg-green-200 p-3 rounded-md text-center font-medium text-green-800">Pod (Container)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="component-info" class="w-full lg:w-1/3 mt-6 lg:mt-0 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 id="info-title" class="text-xl font-bold text-indigo-700 mb-2">Select a Component</h3>
+                    <p id="info-description" class="text-slate-600">Click on a component in the diagram to learn about its function within the Kubernetes cluster.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workloads Section -->
+        <section id="workloads" class="content-section">
+             <h2 class="text-3xl font-bold mb-4">Workload Patterns</h2>
+             <p class="mb-8 text-lg text-slate-600">Kubernetes provides several built-in workload resources, called controllers, to manage different types of applications. Choose a pattern below to see its use case and configuration.</p>
+             <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                 <div class="border-b border-slate-200">
+                     <nav id="workloads-tabs" class="flex space-x-2 p-2" aria-label="Tabs">
+                     </nav>
+                 </div>
+                 <div id="workloads-content" class="p-6">
+                 </div>
+             </div>
+        </section>
+
+        <!-- Configuration Examples Section -->
+        <section id="examples" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">Configuration Examples</h2>
+            <p class="mb-8 text-lg text-slate-600">Explore practical YAML configurations for common and advanced workload patterns on GKE, from AI models to standard web applications.</p>
+            
+            <div class="my-8">
+                 <img src="https://storage.googleapis.com/gweb-cloud-blog-publish/images/GKE_powering_AI_innovation.max-2500x2500.jpg" 
+                      alt="A graphic stating 'How GKE is powering AI innovation' with the Google Cloud Next '25 logo." 
+                      class="w-full max-w-4xl mx-auto rounded-xl shadow-lg"
+                      onerror="this.onerror=null;this.src='https://placehold.co/1200x675/e0e7ff/4f46e5?text=GKE+Powering+AI+Innovation';">
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 mt-12">
+                 <div class="border-b border-slate-200">
+                     <nav id="examples-tabs" class="flex flex-wrap space-x-2 p-2" aria-label="Tabs">
+                     </nav>
+                 </div>
+                 <div id="examples-content" class="p-6">
+                 </div>
+             </div>
+        </section>
+
+        <!-- GKE Section -->
+        <section id="gke" class="content-section">
+             <h2 class="text-3xl font-bold mb-4">GKE Deep Dive</h2>
+             <p class="mb-8 text-lg text-slate-600">Google Kubernetes Engine (GKE) is a managed service that simplifies cluster operations. It comes in two primary modes: Standard and Autopilot, plus an Enterprise tier for large-scale needs.</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-xl mb-3 text-indigo-700">Standard Mode</h3>
+                    <p class="mb-4">Offers maximum flexibility and control. You configure and manage your node pools, giving you fine-grained control over the underlying infrastructure. Best for when you have specific node requirements or need to run custom system daemons.</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li>Full node configuration control.</li>
+                        <li>You manage node pools and scaling.</li>
+                        <li>Billed for provisioned node resources.</li>
+                    </ul>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-xl mb-3 text-indigo-700">Autopilot Mode</h3>
+                    <p class="mb-4">A hands-off, fully managed experience. GKE manages your nodes, scaling, and security configurations based on your workload specifications. Best for optimizing costs and reducing operational overhead.</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600">
+                        <li>GKE manages nodes and infrastructure.</li>
+                        <li>Pay-per-Pod resource consumption.</li>
+                        <li>Enhanced security posture by default.</li>
+                    </ul>
+                </div>
+             </div>
+             <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-xl mb-3 text-indigo-700">GKE Enterprise</h3>
+                <p>Builds on GKE to provide a unified management platform for running containerized applications at scale, especially across multiple clusters in hybrid or multi-cloud environments. It introduces the concept of a **fleet**, a logical grouping of clusters that can be managed together, providing consistent configuration, policy enforcement, and service management from a single control plane.</p>
+             </div>
+        </section>
+
+        <!-- Operations Section -->
+        <section id="operations" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">Operations & CLI</h2>
+            <p class="mb-8 text-lg text-slate-600">The `kubectl` command-line tool is your primary interface for managing a Kubernetes cluster. Use this simulated terminal to learn some of the most common commands for inspecting your applications.</p>
+            <div class="lg:flex lg:space-x-8">
+                 <div class="w-full lg:w-1/4 mb-6 lg:mb-0">
+                     <h3 class="font-semibold text-lg mb-3">Available Commands</h3>
+                     <div id="cli-commands" class="flex flex-col space-y-2">
+                     </div>
+                 </div>
+                 <div class="flex-1">
+                    <div class="bg-black text-white rounded-lg p-4 h-96 flex flex-col">
+                        <div class="flex-shrink-0 flex items-center space-x-2 border-b border-gray-700 pb-2 mb-2">
+                             <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                             <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div id="terminal" class="flex-1 overflow-y-auto terminal-output">
+                            <p>Click a command to see its simulated output here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scalability Section -->
+        <section id="scalability" class="content-section">
+            <h2 class="text-3xl font-bold mb-4">GKE and Scalability</h2>
+            <p class="mb-8 text-lg text-slate-600">GKE provides powerful, multi-dimensional autoscaling to ensure your applications have the resources they need, when they need them, without over-provisioning. This example focuses on the Horizontal Pod Autoscaler (HPA).</p>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-xl font-bold mb-2">Horizontal Pod Autoscaler (HPA) Demo</h3>
+                <p class="mb-4">HPA automatically adds or removes Pods based on metrics like CPU utilization. Drag the slider below to simulate a change in CPU load and watch the HPA adjust the number of replicas.</p>
+                <div class="mb-6">
+                    <label for="cpu-slider" class="block font-medium mb-2">Simulated CPU Load: <span id="cpu-value" class="font-bold text-indigo-600">5%</span></label>
+                    <input id="cpu-slider" type="range" min="5" max="95" value="5" class="w-full">
+                </div>
+                <div class="chart-container">
+                    <canvas id="hpaChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <script>
+        const appData = {
+            concepts: [
+                { id: 'pod', name: 'Pod', description: "The smallest deployable unit in Kubernetes. A Pod represents a single instance of a running process and encapsulates one or more containers, storage resources, and a unique network IP." },
+                { id: 'deployment', name: 'Deployment', description: "Provides declarative updates for Pods. You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate. Ideal for stateless applications." },
+                { id: 'service', name: 'Service', description: "An abstract way to expose an application running on a set of Pods as a network service. With Services, you don't need to modify your application to discover other services; Kubernetes gives Pods their own IP addresses and a single DNS name for a set of Pods." },
+                { id: 'namespace', name: 'Namespace', description: "Used to partition a single physical cluster into multiple virtual clusters. Namespaces provide a scope for names and are a way to divide cluster resources between multiple users via resource quotas." },
+                { id: 'statefulset', name: 'StatefulSet', description: "Manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods. Used for stateful applications like databases." },
+                { id: 'daemonset', name: 'DaemonSet', description: "Ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed, those Pods are garbage collected. Useful for node-level agents like log collectors." },
+            ],
+            architecture: {
+                'kube-apiserver': { title: 'kube-apiserver', description: 'The front-end for the control plane. It exposes the Kubernetes API and is the component that all other components and user tools (like kubectl) interact with to manage the state of the cluster.' },
+                'etcd': { title: 'etcd', description: 'A consistent and highly-available key-value store used as Kubernetes\' backing store for all cluster data. All cluster state and configuration is stored here.' },
+                'kube-scheduler': { title: 'kube-scheduler', description: 'Watches for newly created Pods that have no assigned node, and selects a node for them to run on. It makes decisions based on resource requirements, policies, and affinity specifications.' },
+                'kube-controller-manager': { title: 'kube-controller-manager', description: 'Runs controller processes. Logically, each controller is a separate process, but to reduce complexity, they are all compiled into a single binary and run in a single process. These include the Node Controller, Replication Controller, etc.' },
+                'kubelet': { title: 'kubelet', description: 'An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod as described by the control plane.' },
+                'kube-proxy': { title: 'kube-proxy', description: 'A network proxy that runs on each node, maintaining network rules on nodes. These network rules allow network communication to your Pods from network sessions inside or outside of your cluster.' }
+            },
+            workloads: [
+                { name: 'Deployment', description: 'Ideal for stateless applications like web servers. It manages a set of replica Pods and handles rolling updates to gracefully deploy new versions without downtime.' },
+                { name: 'StatefulSet', description: 'Used for stateful applications that require stable, unique network identifiers and persistent storage. Manages Pods with a strict, ordered identity (e.g., db-0, db-1).' },
+                { name: 'Job', description: 'Creates one or more Pods and ensures that a specified number of them successfully terminate. Ideal for batch tasks, data processing, or any workload that runs to completion.' },
+                { name: 'DaemonSet', description: 'Ensures that a copy of a Pod runs on all (or a subset of) nodes in the cluster. Useful for deploying cluster-wide agents like log collectors or monitoring solutions.' }
+            ],
+            examples: [
+                {
+                    name: 'LLM Deployment',
+                    content: `
+                        <p class="mb-4">A Deployment configuration for an LLM model on GKE, including requests and limits for CPU, memory, and GPU, as well as ephemeral storage. This is typical for demanding AI/ML workloads.</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llama-server
+  template:
+    metadata:
+      labels:
+        app: llama-server
+    spec:
+      containers:
+      - name: inference-server
+        image: us-docker.pkg.dev/vertex-ai/llm/inference:latest
+        resources:
+          requests:
+            cpu: "157"
+            memory: "2067Gi"
+            nvidia.com/gpu: "8"
+          limits:
+            cpu: "157"
+            memory: "2067Gi"
+            nvidia.com/gpu: "8"</code></pre>
+                        </div>
+                    `
+                },
+                {
+                    name: 'Web App (REST API)',
+                    content: `
+                        <p class="mb-4">A complete example for a scalable REST API backend. This includes creating a GKE cluster, deploying the application with replicas, exposing it with a LoadBalancer Service, and setting up autoscaling with HPA.</p>
+                        <h4 class="font-semibold text-lg mt-6 mb-2">1. Deployment (backend-deployment.yaml)</h4>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+      - name: backend-api-container
+        image: your-api-image:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"</code></pre>
+                        </div>
+                        <h4 class="font-semibold text-lg mt-6 mb-2">2. Service (backend-service-lb.yaml)</h4>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code>apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: backend-api
+  ports:
+    - port: 80
+      targetPort: 8080</code></pre>
+                        </div>
+                        <h4 class="font-semibold text-lg mt-6 mb-2">3. Autoscaler (backend-hpa.yaml)</h4>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code>apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-api-deployment
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70</code></pre>
+                        </div>
+                    `
+                }
+            ],
+            cli: [
+                 { cmd: 'kubectl get pods', output: `NAME                                READY   STATUS    RESTARTS   AGE
+backend-api-deployment-5b68d7d64-2z5vj   1/1     Running   0          5m12s
+backend-api-deployment-5b68d7d64-8h9k4   1/1     Running   0          5m12s
+backend-api-deployment-5b68d7d64-n2f8g   1/1     Running   0          5m12s` },
+                { cmd: 'kubectl describe pod backend-api-deployment-5b68d7d64-2z5vj', output: `Name:         backend-api-deployment-5b68d7d64-2z5vj
+Namespace:    default
+Priority:     0
+Node:         gke-hello-cluster-default-pool-a1b2c3d4-x5y6
+Start Time:   Wed, 02 Jul 2025 14:30:00 +0200
+Labels:       app=backend-api
+              pod-template-hash=5b68d7d64
+Status:       Running
+IP:           10.24.1.5
+Containers:
+  backend-api-container:
+    Container ID:   containerd://...
+    Image:          your-api-image:latest
+    State:          Running
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     500m
+      memory:  1Gi
+    Requests:
+      cpu:     250m
+      memory:  512Mi
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  5m15s default-scheduler  Successfully assigned default/backend-api-deployment-5b68d7d64-2z5vj to node...
+  Normal  Pulling    5m14s kubelet            Pulling image "your-api-image:latest"
+  Normal  Pulled     5m12s kubelet            Successfully pulled image
+  Normal  Created    5m12s kubelet            Created container backend-api-container
+  Normal  Started    5m12s kubelet            Started container backend-api-container`},
+                { cmd: 'kubectl logs backend-api-deployment-5b68d7d64-2z5vj', output: `[INFO] Server listening on port 8080
+[INFO] Request received: GET /api/v1/items
+[INFO] Request received: GET /api/v1/items
+[INFO] Request received: GET /api/v1/items/123`}
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function navigateTo(hash) {
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === hash);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', `#${section.id}` === hash);
+                });
+            }
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const hash = e.currentTarget.hash;
+                    window.location.hash = hash;
+                });
+            });
+
+            window.addEventListener('hashchange', () => {
+                 navigateTo(window.location.hash || '#introduction');
+            });
+            
+            navigateTo(window.location.hash || '#introduction');
+
+            const conceptsGrid = document.getElementById('concepts-grid');
+            if (conceptsGrid) {
+                appData.concepts.forEach(concept => {
+                    const card = document.createElement('div');
+                    card.className = 'p-6 bg-white rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all';
+                    card.innerHTML = `
+                        <h3 class="font-bold text-xl mb-2 text-indigo-700">${concept.name}</h3>
+                        <p class="text-slate-600">${concept.description}</p>
+                    `;
+                    conceptsGrid.appendChild(card);
+                });
+            }
+
+            const components = document.querySelectorAll('.component');
+            const infoTitle = document.getElementById('info-title');
+            const infoDescription = document.getElementById('info-description');
+
+            components.forEach(component => {
+                component.addEventListener('click', () => {
+                    components.forEach(c => c.classList.remove('active'));
+                    component.classList.add('active');
+                    const data = appData.architecture[component.id];
+                    infoTitle.textContent = data.title;
+                    infoDescription.textContent = data.description;
+                });
+            });
+
+            function setupTabs(tabContainerId, contentContainerId, data) {
+                 const tabsContainer = document.getElementById(tabContainerId);
+                 const contentContainer = document.getElementById(contentContainerId);
+                 if (!tabsContainer || !contentContainer) return;
+
+                 data.forEach((item, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = 'tab-button px-4 py-2 text-sm font-medium rounded-md';
+                    tab.textContent = item.name;
+                    tab.dataset.index = index;
+                    tabsContainer.appendChild(tab);
+                });
+
+                const showContent = (index) => {
+                    const item = data[index];
+                    contentContainer.innerHTML = item.description ? `<p class="mb-4">${item.description}</p>` : item.content;
+
+                    tabsContainer.querySelectorAll('.tab-button').forEach((tab, i) => {
+                         tab.classList.toggle('bg-indigo-100', i === index);
+                         tab.classList.toggle('text-indigo-700', i === index);
+                         tab.classList.toggle('text-slate-500', i !== index);
+                         tab.classList.toggle('hover:bg-slate-100', i !== index);
+                    });
+                };
+
+                tabsContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('tab-button')) {
+                        showContent(parseInt(e.target.dataset.index));
+                    }
+                });
+                
+                showContent(0);
+            }
+
+            setupTabs('workloads-tabs', 'workloads-content', appData.workloads.map(w => ({name: w.name, description: w.description})));
+            setupTabs('examples-tabs', 'examples-content', appData.examples);
+
+
+            const cliCommandsContainer = document.getElementById('cli-commands');
+            const terminal = document.getElementById('terminal');
+
+            if (cliCommandsContainer && terminal) {
+                appData.cli.forEach(item => {
+                    const button = document.createElement('button');
+                    button.className = 'text-left p-2 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors';
+                    button.textContent = item.cmd;
+                    button.onclick = () => {
+                        terminal.innerHTML = `<p class="text-green-400">&gt; ${item.cmd}</p><p>${item.output}</p>`;
+                    };
+                    cliCommandsContainer.appendChild(button);
+                });
+            }
+            
+            const hpaChartCanvas = document.getElementById('hpaChart');
+            if (hpaChartCanvas) {
+                const ctx = hpaChartCanvas.getContext('2d');
+                const slider = document.getElementById('cpu-slider');
+                const cpuValue = document.getElementById('cpu-value');
+
+                let hpaChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Replicas'],
+                        datasets: [{
+                            label: 'Current Replicas',
+                            data: [3],
+                            backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            borderWidth: 1
+                        }, {
+                            label: 'Target CPU Threshold (70%)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 2,
+                            type: 'line',
+                            borderDash: [5, 5],
+                            fill: false,
+                            data: [{x: -0.5, y: 8.4}, {x: 0.5, y: 8.4}]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 12,
+                                title: { display: true, text: 'Number of Pods' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: { enabled: false }
+                        }
+                    }
+                });
+                
+                function updateChart() {
+                    const cpu = parseInt(slider.value);
+                    cpuValue.textContent = `${cpu}%`;
+                    
+                    let replicas = 3;
+                    if (cpu > 70) {
+                        replicas = Math.ceil(3 * (cpu / 70));
+                        replicas = Math.min(replicas, 10);
+                    }
+                    
+                    hpaChart.data.datasets[0].data[0] = replicas;
+                    hpaChart.update();
+                }
+
+                slider.addEventListener('input', updateChart);
+                updateChart();
+            }
+        });
+
+        function copyCode(button) {
+            const pre = button.closest('.code-block').querySelector('pre');
+            const text = pre.textContent;
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                button.textContent = 'Copied!';
+                setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+    </script>
+</body>
+</html>
